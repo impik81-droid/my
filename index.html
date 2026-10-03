@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Тренировочный дневник</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f5f7;color:#17181a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.app{max-width:720px;margin:auto;min-height:100vh;padding-bottom:90px}.top{padding:28px 20px 16px;background:#fff;position:sticky;top:0;z-index:5;border-bottom:1px solid #e7e7e7}
+h1{font-size:28px;margin:0 0 5px}.sub{color:#777;font-size:14px}
+.tabs{display:flex;gap:8px;padding:14px 20px;background:#fff}.tab{border:0;background:#eee;padding:10px 15px;border-radius:12px;font-weight:600}.tab.active{background:#17181a;color:#fff}
+main{padding:16px 20px}.card{background:#fff;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 2px 10px #00000008}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.muted{color:#777;font-size:14px}
+button,.btn{cursor:pointer;border:0;border-radius:12px;padding:11px 14px;font-weight:700}.primary{background:#17181a;color:#fff}.danger{background:#fee;color:#b00020}.ghost{background:#eee}
+.exercise h3{margin:0;font-size:18px}.sets{margin-top:12px}.set{display:grid;grid-template-columns:35px 1fr 1fr 38px;gap:7px;align-items:center;margin:7px 0}.set b{text-align:center;color:#777}
+input{width:100%;border:1px solid #ddd;border-radius:10px;padding:10px;font-size:15px;background:#fafafa}.del{padding:8px;background:#f1f1f1}
+.actions{display:flex;gap:8px;margin-top:12px}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#f6f6f6;border-radius:14px;padding:14px}.stat strong{font-size:22px;display:block;margin-top:4px}
+.hidden{display:none}.history-item{padding:13px 0;border-bottom:1px solid #eee}.history-item:last-child{border:0}
+.empty{text-align:center;color:#888;padding:35px 10px}.record{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee}
+
+.set.done{opacity:.58;background:#f2f8f2;border-radius:10px;padding:5px 3px}.check{width:20px;height:20px;accent-color:#17181a}
+.prev{font-size:12px;color:#777;margin:4px 0 8px 42px}.progressbar{height:7px;background:#eee;border-radius:10px;overflow:hidden;margin-top:10px}.progressbar i{display:block;height:100%;background:#17181a}.superset-label{font-size:13px;color:#777;font-weight:700;margin:16px 4px 6px}
+''</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><h1>Мой дневник</h1><div class="sub" id="today"></div></header>
+<nav class="tabs">
+<button class="tab active" data-page="home">Главная</button>
+<button class="tab" data-page="workout">Тренировка</button>
+<button class="tab" data-page="history">История</button>
+</nav>
+<main>
+<section id="home">
+<div class="card"><div class="row"><div><b>Сегодня</b><div class="muted" id="homeStatus">Тренировка ещё не начата</div></div><button class="primary" onclick="showPage('workout')">Начать</button></div></div>
+<div class="card"><h3>Статистика</h3><div class="stats">
+<div class="stat"><span class="muted">Тренировок</span><strong id="count">0</strong></div>
+<div class="stat"><span class="muted">Подходов</span><strong id="setsCount">0</strong></div>
+</div></div>
+<div class="card"><h3>Личные рекорды</h3><div id="records"></div></div>
+</section>
+
+<section id="workout" class="hidden">
+<div class="card">
+  <div class="row"><div><b>Новая тренировка</b><div class="muted" id="workoutDate"></div></div><button class="ghost" onclick="clearWorkout()">Очистить</button></div>
+  <div style="margin-top:14px">
+    <div class="muted" style="margin-bottom:7px">Выбери день программы</div>
+    <select id="programSelect" onchange="loadProgram(this.value)" style="width:100%;border:1px solid #ddd;border-radius:10px;padding:11px;font-size:15px;background:#fafafa">
+      <option value="">— Выбрать программу —</option>
+      <option value="A">День А — Толчок</option>
+      <option value="B">День Б — Тяга</option>
+      <option value="V">День В — Толчок</option>
+      <option value="G">День Г — Тяга</option>
+    </select>
+  </div>
+</div>
+<div id="exercises"></div>
+<div class="actions"><button class="ghost" onclick="addExercise()">＋ Добавить упражнение</button><button class="primary" onclick="saveWorkout()">Сохранить</button></div>
+</section>
+
+<section id="history" class="hidden">
+<div class="card"><h3>История тренировок</h3><div id="historyList"></div></div>
+</section>
+</main>
+</div>
+<script>
+const KEY="workout_diary_v1";
+let data=JSON.parse(localStorage.getItem(KEY)||'{"workouts":[],"draft":[]}');
+let draft=data.draft||[];
+
+const $=id=>document.getElementById(id);
+function save(){data.draft=draft;localStorage.setItem(KEY,JSON.stringify(data));}
+function dateRU(d=new Date()){return d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}
+$('today').textContent=dateRU(); $('workoutDate').textContent=dateRU();
+
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+function showPage(p){
+ document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hidden',x.id!==p));
+ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.page===p));
+ if(p==='history')renderHistory(); if(p==='home')renderHome(); if(p==='workout')renderWorkout();
+}
+const PROGRAMS={
+ A:{title:"День А — Толчок", cardio:"Кардио: ходьба на дорожке, 10 мин", supersets:[
+  [["Жим штанги лёжа",4,"8-12"],["Выпады с гантелями",3,"8-12"]],
+  [["Жим гантелей на наклонной",3,"8-12"],["Жим ногами",4,"8-12"]],
+  [["Жим Арнольда",3,"8-12"],["Подъём на носки стоя",3,"8-12"]],
+  [["Французский жим",3,"8-12"],["Скручивания",3,"8-12"]]],end:"Кардио: 10 мин"},
+ B:{title:"День Б — Тяга",cardio:"Кардио: 10 мин",supersets:[
+  [["Тяга верхнего блока",3,"8-12"],["Махи гантелями в стороны",4,"8-12"]],
+  [["Тяга гантели в наклоне",3,"8-12"],["Сгибание ног лёжа",4,"8-12"]],
+  [["Подъём штанги на бицепс",4,"8-12"],["Шраги с гантелями",4,"8-12"]],
+  [["Гиперэкстензия",3,"8-12"],["Подъём ног в висе",3,"8-12"]]],end:"Кардио: 10 мин"},
+ V:{title:"День В — Толчок",cardio:"Кардио: 10 мин",supersets:[
+  [["Жим в Смите под 30°",3,"8-12"],["Болгарские сплит-приседы",3,"8-12"]],
+  [["Кроссовер",3,"8-12"],["Разгибание ног",4,"8-12"]],
+  [["Отжимания на брусьях",3,"8-12"],["Икры сидя",3,"8-12"]],
+  [["Разгибание рук на блоке",4,"8-12"],["Планка",3,"45 сек"]]],end:"Кардио: 10 мин"},
+ G:{title:"День Г — Тяга",cardio:"Кардио: 10 мин",supersets:[
+  [["Подтягивания",3,"8-12"],["Обратные разведения в тренажёре",4,"8-12"]],
+  [["Тяга Т-грифа",3,"8-12"],["Румынская тяга",3,"8-12"]],
+  [["Сгибание рук «молот»",4,"8-12"],["Тяга к лицу",3,"8-12"]],
+  [["Ягодичный мостик",4,"8-12"],["Пресс на блоке",3,"8-12"]]],end:"Кардио: 10 мин"}
+};
+function loadProgram(key){
+ const pr=PROGRAMS[key]; if(!pr)return;
+ draft=[];
+ pr.supersets.flat().forEach(x=>draft.push({name:x[0],sets:Array.from({length:x[1]},()=>({weight:'',reps:''}))}));
+ draft.program=pr.title; draft.cardioStart=pr.cardio; draft.cardioEnd=pr.end; save(); renderWorkout();
+}
+function addExercise(name='Новое упражнение'){
+ draft.push({name,sets:[{weight:'',reps:''}]}); save(); renderWorkout();
+}
+function addSet(i){draft[i].sets.push({weight:'',reps:''});save();renderWorkout();}
+function delSet(i,j){draft[i].sets.splice(j,1);if(!draft[i].sets.length)draft[i].sets.push({weight:'',reps:''});save();renderWorkout();}
+function delExercise(i){draft.splice(i,1);save();renderWorkout();}
+function previousResult(name){
+ for(const w of data.workouts){
+  const e=w.exercises.find(x=>x.name===name);
+  if(e) return e;
+ }
+ return null;
+}
+function toggleSet(i,j,checked){
+ draft[i].sets[j].done=checked; save(); renderWorkout();
+}
+function setVal(i,j,key,val){draft[i].sets[j][key]=val;save();}
+function workoutProgress(){
+ let total=0,done=0;
+ draft.forEach(e=>e.sets.forEach(s=>{total++;if(s.done)done++}));
+ return {total,done,pct:total?Math.round(done/total*100):0};
+}
+function renderWorkout(){
+ const box=$('exercises');box.innerHTML='';
+ const prog=workoutProgress();
+ if(draft.length) box.innerHTML+=`<div class="card"><div class="row"><b>Прогресс тренировки</b><b>${prog.done}/${prog.total}</b></div><div class="progressbar"><i style="width:${prog.pct}%"></i></div></div>`;
+ if(!draft.length){box.innerHTML='<div class="card empty">Выбери день программы выше или добавь упражнение вручную 👇</div>';return}
+ if(draft.cardioStart) box.innerHTML+=`<div class="card"><b>🔥 ${esc(draft.cardioStart)}</b></div>`;
+ draft.forEach((e,i)=>{
+  if(i%2===0) box.innerHTML+=`<div class="muted" style="font-weight:700;margin:10px 4px 6px">Суперсет ${Math.floor(i/2)+1}</div>`;
+  const c=document.createElement('div');c.className='card exercise';
+  c.innerHTML=`<div class="row"><input value="${esc(e.name)}" onchange="draft[${i}].name=this.value;save()"><button class="del" onclick="delExercise(${i})">✕</button></div><div class="sets"><div class="set muted"><b>#</b><span>Вес, кг</span><span>Повторы</span><span></span></div>`;
+  const prev=previousResult(e.name);
+if(prev) c.innerHTML+=`<div class="prev">Прошлый раз: ${prev.sets.map(s=>(s.weight||"—")+" кг × "+(s.reps||"—")).join(" · ")}</div>`;
+e.sets.forEach((s,j)=>{
+ const done=s.done?'done':'';
+ c.innerHTML+=`<div class="set ${done}"><input class="check" type="checkbox" ${s.done?'checked':''} onchange="toggleSet(${i},${j},this.checked)" title="Выполнено"><b>${j+1}</b><input type="number" inputmode="decimal" value="${s.weight}" placeholder="${prev?.sets[j]?.weight||'80'}" onchange="setVal(${i},${j},'weight',this.value)"><input type="number" inputmode="numeric" value="${s.reps}" placeholder="${prev?.sets[j]?.reps||'10'}" onchange="setVal(${i},${j},'reps',this.value)"><button class="del" onclick="delSet(${i},${j})">✕</button></div>`;
+});
+  c.innerHTML+=`</div><button class="ghost" onclick="addSet(${i})">＋ Подход</button></div>`;box.appendChild(c);
+ });
+ if(draft.cardioEnd) box.innerHTML+=`<div class="card"><b>🔥 ${esc(draft.cardioEnd)}</b></div>`;
+}
+function saveWorkout(){
+ const clean=draft.filter(e=>e.name.trim()&&e.sets.some(s=>s.weight!==''||s.reps!==''));
+ if(!clean.length){alert('Добавь хотя бы одно упражнение и подход.');return}
+ data.workouts.unshift({date:new Date().toISOString(),program:draft.program||"Свободная тренировка",exercises:JSON.parse(JSON.stringify(clean))});draft=[];save();renderHome();alert('Тренировка сохранена!');showPage('home');
+}
+function clearWorkout(){if(confirm('Очистить текущую тренировку?')){draft=[];save();renderWorkout()}}
+function renderHome(){
+ $('count').textContent=data.workouts.length;
+ $('setsCount').textContent=data.workouts.reduce((n,w)=>n+w.exercises.reduce((a,e)=>a+e.sets.length,0),0);
+ $('homeStatus').textContent=data.workouts[0]?.date?.slice(0,10)===new Date().toISOString().slice(0,10)?'Тренировка сохранена':'Тренировка ещё не начата';
+ const best={};
+ data.workouts.forEach(w=>w.exercises.forEach(e=>e.sets.forEach(s=>{let x=Number(s.weight);if(x&&!best[e.name])best[e.name]=x;else if(x&&x>best[e.name])best[e.name]=x})));
+ $('records').innerHTML=Object.keys(best).length?Object.entries(best).map(([n,v])=>`<div class="record"><span>${esc(n)}</span><b>${v} кг</b></div>`).join(''):'<div class="empty">Пока нет данных</div>';
+}
+function renderHistory(){
+ $('historyList').innerHTML=data.workouts.length?data.workouts.map(w=>`<div class="history-item"><b>${dateRU(new Date(w.date))}</b><div class="muted">${esc(w.program||"Свободная тренировка")}</div><div class="muted">${w.exercises.map(e=>esc(e.name)).join(', ')}</div></div>`).join(''):'<div class="empty">История пуста</div>';
+}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+renderHome();renderWorkout();
+</script>
+</body></html>
