@@ -1,80 +1,70 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f766e">
-<title>Мой дневник тренировок</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Мой дневник</title>
 <style>
-:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#6b7280;--line:#e6eaf0;--accent:#0f766e;--accent2:#2563eb;--radius:18px;--shadow:0 8px 28px rgba(15,23,42,.07)}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}button,input{font:inherit}button{cursor:pointer}
-.app{max-width:980px;margin:auto;padding:18px 14px 90px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.brand h1{font-size:24px;margin:0 0 3px}.brand p{margin:0;color:var(--muted);font-size:13px}.iconbtn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px}
-.day-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}.day-tab{border:0;border-radius:14px;padding:11px 7px;color:#fff;font-weight:800;background:#64748b}.day-tab[data-day=A]{background:#0f766e}.day-tab[data-day=B]{background:#2563eb}.day-tab[data-day=V]{background:#6d4bc3}.day-tab[data-day=G]{background:#155e75}.day-tab.active{box-shadow:0 0 0 3px rgba(255,255,255,.75),0 5px 16px rgba(15,23,42,.18);transform:translateY(-1px)}
-.hero{border-radius:22px;padding:18px;color:#fff;margin-bottom:14px;box-shadow:var(--shadow)}.hero.a{background:linear-gradient(135deg,#0f766e,#115e59)}.hero.b{background:linear-gradient(135deg,#2563eb,#1d4ed8)}.hero.v{background:linear-gradient(135deg,#7c5ac7,#5b3da5)}.hero.g{background:linear-gradient(135deg,#155e75,#164e63)}.hero-top{display:flex;justify-content:space-between;align-items:end;gap:10px}.hero h2{margin:0;font-size:28px}.hero .subtitle{opacity:.9;font-size:13px;margin-top:3px}.progress{margin-top:14px}.progress-line{height:8px;background:rgba(255,255,255,.25);border-radius:20px;overflow:hidden}.progress-fill{height:100%;background:#fff;border-radius:20px;width:0;transition:.25s}.progress-text{display:flex;justify-content:space-between;font-size:12px;margin-top:6px;opacity:.92}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}.card-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.card-title h3{margin:0;font-size:16px}.pill{font-size:11px;color:var(--muted);background:#f1f5f9;border-radius:99px;padding:5px 8px}.superset{border:1px solid var(--line);border-radius:15px;overflow:hidden;margin-top:10px}.sup-head{padding:9px 11px;font-weight:800;font-size:13px;background:#f8fafc;border-bottom:1px solid var(--line)}.exercise{padding:11px;border-bottom:1px solid var(--line)}.exercise:last-child{border-bottom:0}.ex-main{display:flex;justify-content:space-between;gap:10px}.ex-name{font-weight:750}.prescribed{color:var(--muted);font-size:12px;margin-top:3px}.set-grid{display:grid;grid-template-columns:38px 1fr 1fr 44px;gap:7px;margin-top:9px;align-items:center}.set-grid.head{font-size:10px;color:var(--muted);text-align:center}.set-grid input{width:100%;min-width:0;border:1px solid #dbe1e8;border-radius:9px;padding:8px 6px;text-align:center;background:#fff}.set-grid input:focus{outline:2px solid rgba(37,99,235,.2);border-color:#93c5fd}.set-no{text-align:center;color:var(--muted);font-size:12px}.done{width:22px;height:22px;accent-color:var(--accent);justify-self:center}
-.cardio{display:flex;align-items:center;justify-content:space-between;gap:10px}.cardio strong{font-size:14px}.cardio input{width:90px;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}.primary,.secondary{border:0;border-radius:13px;padding:12px;font-weight:800}.primary{background:var(--accent);color:#fff}.secondary{background:#fff;border:1px solid var(--line);color:var(--text)}
-.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:11px;text-align:center}.stat b{display:block;font-size:19px}.stat span{font-size:11px;color:var(--muted)}
-.history{display:none}.history.show{display:block}.empty{padding:25px;text-align:center;color:var(--muted)}.session{border:1px solid var(--line);border-radius:14px;padding:12px;margin:8px 0;background:#fff}.session-top{display:flex;justify-content:space-between;font-weight:800}.session small{color:var(--muted)}.danger{color:#b91c1c;background:#fff;border:1px solid #fecaca;border-radius:10px;padding:7px 9px;margin-top:8px}
-.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:end;justify-content:center;padding:12px;z-index:10}.modal.open{display:flex}.sheet{background:#fff;border-radius:22px 22px 12px 12px;max-width:600px;width:100%;padding:18px}.sheet h3{margin:0 0 8px}.sheet p{color:var(--muted);font-size:13px;line-height:1.45}.sheet-actions{display:flex;gap:8px}.sheet-actions button{flex:1}
-@media(min-width:700px){.app{padding-top:28px}.exercise{padding:13px}.day-tabs{gap:10px}.hero h2{font-size:32px}}
-@media(max-width:430px){.app{padding-left:10px;padding-right:10px}.brand h1{font-size:21px}.day-tab{font-size:12px}.set-grid{grid-template-columns:30px 1fr 1fr 38px;gap:5px}.set-grid input{padding:7px 3px}.summary{grid-template-columns:1fr 1fr}.summary .stat:last-child{grid-column:span 2}}
-</style>
-</head>
-<body>
-<div class="app">
-  <header class="top"><div class="brand"><h1>Дневник тренировок</h1><p>Вес, повторения и прогресс сохраняются автоматически</p></div><button class="iconbtn" id="resetBtn">↺</button></header>
-  <div class="day-tabs" id="dayTabs"></div>
-  <main id="workout"></main>
-  <section class="history" id="history"></section>
-</div>
-<div class="modal" id="modal"><div class="sheet"><h3>Сбросить данные?</h3><p>Будут удалены введённые веса, повторения, отметки подходов и история тренировок на этом устройстве.</p><div class="sheet-actions"><button class="secondary" id="cancelReset">Отмена</button><button class="primary" id="confirmReset">Сбросить</button></div></div></div>
+:root{--bg:#0b0d10;--card:#15181d;--card2:#1c2027;--text:#f4f5f7;--muted:#9aa1ac;--line:#292e37;--accent:#8cf06a;--danger:#ff6969}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.app{max-width:760px;margin:auto;padding:18px 14px 90px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+h1{font-size:26px;margin:0}.sub{color:var(--muted);font-size:13px}.pill{padding:8px 11px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+nav{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:16px}button,select,input{font:inherit}
+button{border:0;border-radius:12px;padding:11px 12px;background:var(--card2);color:var(--text);cursor:pointer}button.active,.accent{background:var(--accent);color:#081006}
+button.danger{color:#ff8b8b}.grid{display:grid;gap:12px}.programs{grid-template-columns:1fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px}.card h2,.card h3{margin:0 0 8px}.muted{color:var(--muted)}
+.day{display:flex;justify-content:space-between;align-items:center;gap:10px}.exercise{background:#111419;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:9px}
+.ss{font-size:12px;color:var(--accent);font-weight:700;margin-bottom:6px}.sets{display:grid;gap:6px}.set{display:grid;grid-template-columns:28px 1fr 1fr 42px;gap:6px;align-items:center}
+input{width:100%;background:#0b0d10;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px}.check{width:40px;height:38px;padding:0}.done{border-color:var(--accent)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.hidden{display:none!important}.empty{padding:30px;text-align:center;color:var(--muted)}
+@media(max-width:520px){.programs{grid-template-columns:1fr}nav{grid-template-columns:repeat(2,1fr)}}
+</style></head>
+<body><main class="app">
+<div class="top"><div><h1>Мой дневник</h1><div class="sub" id="status">Облако не подключено</div></div><button id="authBtn">Войти</button></div>
+<nav><button data-tab="home" class="active">Главная</button><button data-tab="workout">Тренировка</button><button data-tab="calendar">Календарь</button><button data-tab="history">История</button></nav>
+<section id="home"></section><section id="workout" class="hidden"></section><section id="calendar" class="hidden"></section><section id="history" class="hidden"></section>
+</main>
 <script>
-const PROGRAM={
- A:{title:'День А',type:'Толчок',class:'a',sets:27,ex:[
-  ['Суперсет 1',[['Жим лёжа в Смите',3,'45 кг'],['Разгибание ног',4,'90 кг']]],
-  ['Суперсет 2',[['Разводка в тренажёре «бабочка»',3,'65 кг'],['Присед в Гакке',4,'50 кг']]],
-  ['Суперсет 3',[['Жим гантелей сидя',3,'12,5 кг'],['Икры в тренажёре',3,'25 кг']]],
-  ['Суперсет 4',[['Разгибание рук с рукояткой',4,'45 кг'],['Пресс',3,'0 кг']]]]},
- B:{title:'День Б',type:'Тяга',class:'b',sets:32,ex:[
-  ['Суперсет 1',[['Тяга горизонтального хамера',3,'20 кг'],['Махи с гантелями',6,'7,5 кг']]],
-  ['Суперсет 2',[['Тяга Т-грифа',3,'35 кг'],['Сгибание ног сидя',5]]],
-  ['Суперсет 3',[['Сгибание рук со штангой',4,'45 кг'],['Шраги с гантелями',4,'22,5 кг']]],
-  ['Суперсет 4',[['Икры в жиме ногами',3,'30 кг'],['Пресс',3,'0 кг']]]]},
- V:{title:'День В',type:'Толчок',class:'v',sets:23,ex:[
-  ['Суперсет 1',[['Жим лёжа в Смите под 30°',3,'30 кг'],['Присед в Гакке',4,'50 кг']]],
-  ['Суперсет 2',[['Разводка в тренажёре «бабочка»',3,'65 кг'],['Разгибание рук из-за головы',4,''],['Икры в жиме ногами',2,'30 кг']]],
-  ['Суперсет 3',[['Ягодичный мостик со штангой',4,''],['Пресс',3,'0 кг']]]]},
- G:{title:'День Г',type:'Тяга',class:'g',sets:31,ex:[
-  ['Суперсет 1',[['Подтягивания',3,''],['Махи с гантелями',6,'7,5 кг']]],
-  ['Суперсет 2',[['Тяга ГБ двумя руками',3,'50 кг'],['Сгибание ног сидя',5]]],
-  ['Суперсет 3',[['Сгибание рук с гантелями под углом',4,'12,5 кг'],['Отведение в Пек-Деке',4,'35 кг']]],
-  ['Суперсет 4',[['Икры в тренажёре',3,'25 кг'],['Пресс',3,'0 кг']]]]}
-};
-const KEY='workoutDiary_v3';
-let state={day:'A',data:{},history:[]};
-try{const raw=localStorage.getItem(KEY);if(raw) state=JSON.parse(raw)||state;}catch(e){console.warn('Storage unavailable',e)}
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn('Save unavailable',e)}};
-const dayTabs=document.getElementById('dayTabs');
-const workout=document.getElementById('workout');
-const history=document.getElementById('history');
-function id(day,si,ei,set,field){return `${day}_${si}_${ei}_${set}_${field}`}
-function getSet(day,si,ei,set,ex){let d=state.data[id(day,si,ei,set,'x')];return d||{weight:(ex[2]||'').replace(' кг',''),reps:'',done:false}}
-function renderTabs(){dayTabs.innerHTML=Object.entries(PROGRAM).map(([k,p])=>`<button class="day-tab ${state.day===k?'active':''}" data-day="${k}">${p.title.replace('День ','')}</button>`).join('')+`<button class="day-tab" id="historyTab" style="background:#475569">История</button>`;dayTabs.querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{state.day=b.dataset.day;save();render()});document.getElementById('historyTab').onclick=()=>showHistory()}
-function render(){history.classList.remove('show');workout.style.display='block';renderTabs();const p=PROGRAM[state.day];let total=0,done=0;
-let html=`<section class="hero ${p.class}"><div class="hero-top"><div><h2>${p.title}</h2><div class="subtitle">${p.type} · ${p.sets} рабочих подходов</div></div><b>${Math.round((p.sets?done/p.sets:0)*100)}%</b></div><div class="progress"><div class="progress-line"><div class="progress-fill" id="progressFill"></div></div><div class="progress-text"><span>Выполнено подходов</span><span id="progressText">0 / ${p.sets}</span></div></div></section>`;
-html+=`<section class="card"><div class="cardio"><div><strong>🏃 Кардио — начало</strong><div class="prescribed">Ходьба на дорожке</div></div><input id="cardioStart" value="${state.data[`${state.day}_cardioStart`]||'10'}" inputmode="decimal" placeholder="мин"></div></section>`;
-p.ex.forEach((ss,si)=>{html+=`<section class="card"><div class="supset"><div class="sup-head">${ss[0]}</div>`;ss[1].forEach((ex,ei)=>{html+=`<div class="exercise"><div class="ex-main"><div><div class="ex-name">${ex[0]}</div><div class="prescribed">План: ${ex[1]} × 8–12${ex[2]?` · ${ex[2]}`:''}</div></div></div><div class="set-grid head"><span>№</span><span>Вес</span><span>Повт.</span><span>✓</span></div>`;for(let s=1;s<=ex[1];s++){total++;const d=getSet(state.day,si,ei,s,ex);if(d.done)done++;html+=`<div class="set-grid"><span class="set-no">${s}</span><input data-field="weight" data-id="${id(state.day,si,ei,s,'x')}" value="${d.weight||''}" inputmode="decimal" placeholder="кг"><input data-field="reps" data-id="${id(state.day,si,ei,s,'x')}" value="${d.reps||''}" inputmode="numeric" placeholder="8–12"><input class="done" type="checkbox" data-field="done" data-id="${id(state.day,si,ei,s,'x')}" ${d.done?'checked':''}></div>`}html+=`</div>`});html+=`</section>`});
-html+=`<section class="card"><div class="cardio"><div><strong>🏃 Кардио — конец</strong><div class="prescribed">Ходьба на дорожке</div></div><input id="cardioEnd" value="${state.data[`${state.day}_cardioEnd`]||'10'}" inputmode="decimal" placeholder="мин"></div></section>`;
-html+=`<section class="card"><div class="card-title"><h3>Итог тренировки</h3><span class="pill">автосохранение</span></div><div class="summary"><div class="stat"><b id="doneStat">${done}</b><span>подходов</span></div><div class="stat"><b>${p.sets}</b><span>по плану</span></div><div class="stat"><b id="percentStat">${Math.round(done/p.sets*100)}%</b><span>выполнено</span></div></div><div class="actions"><button class="primary" id="finishBtn">Сохранить тренировку</button><button class="secondary" id="clearDay">Очистить день</button></div></section>`;
-workout.innerHTML=html;bindInputs();updateProgress(done,p.sets)}
-function bindInputs(){workout.querySelectorAll('input[data-id]').forEach(inp=>inp.addEventListener('input',()=>{let d=state.data[inp.dataset.id]||{};d[inp.dataset.field]=inp.type==='checkbox'?inp.checked:inp.value;state.data[inp.dataset.id]=d;save();if(inp.type==='checkbox')refreshProgress()}));['cardioStart','cardioEnd'].forEach(k=>document.getElementById(k).addEventListener('input',e=>{state.data[`${state.day}_${k}`]=e.target.value;save()}));document.getElementById('finishBtn').onclick=finishWorkout;document.getElementById('clearDay').onclick=clearDay}
-function refreshProgress(){let p=PROGRAM[state.day],done=0;p.ex.forEach((ss,si)=>ss[1].forEach((ex,ei)=>{for(let s=1;s<=ex[1];s++)if(getSet(state.day,si,ei,s,ex).done)done++}));updateProgress(done,p.sets)}
-function updateProgress(done,total){const pct=Math.min(100,Math.round(done/total*100));const f=document.getElementById('progressFill');if(f)f.style.width=pct+'%';const t=document.getElementById('progressText');if(t)t.textContent=`${done} / ${total}`;const ds=document.getElementById('doneStat');if(ds)ds.textContent=done;const ps=document.getElementById('percentStat');if(ps)ps.textContent=pct+'%';const heroPct=document.querySelector('.hero-top b');if(heroPct)heroPct.textContent=pct+'%'}
-function finishWorkout(){const p=PROGRAM[state.day];let done=0;p.ex.forEach((ss,si)=>ss[1].forEach((ex,ei)=>{for(let s=1;s<=ex[1];s++)if(getSet(state.day,si,ei,s,ex).done)done++}));state.history.unshift({day:state.day,date:new Date().toLocaleString('ru-RU'),done,total:p.sets});state.history=state.history.slice(0,50);save();alert(`Тренировка ${p.title} сохранена. Выполнено ${done} из ${p.sets} подходов.`)}
-function clearDay(){if(!confirm('Очистить введённые данные этого дня?'))return;Object.keys(state.data).filter(k=>k.startsWith(state.day+'_')).forEach(k=>delete state.data[k]);save();render()}
-function showHistory(){workout.style.display='none';history.classList.add('show');renderTabs();history.innerHTML=`<section class="card"><div class="card-title"><h3>История тренировок</h3><span class="pill">${state.history.length} записей</span></div>${state.history.length?state.history.map((s,i)=>`<div class="session"><div class="session-top"><span>${PROGRAM[s.day].title}</span><span>${s.done}/${s.total}</span></div><small>${s.date} · ${Math.round(s.done/s.total*100)}% выполнено</small><br><button class="danger" data-history="${i}">Удалить</button></div>`).join(''):`<div class="empty">Пока нет сохранённых тренировок.<br>После тренировки нажми «Сохранить тренировку».</div>`}</section>`;history.querySelectorAll('[data-history]').forEach(b=>b.onclick=()=>{state.history.splice(+b.dataset.history,1);save();showHistory()})}
-
-document.getElementById('resetBtn').onclick=()=>document.getElementById('modal').classList.add('open');document.getElementById('cancelReset').onclick=()=>document.getElementById('modal').classList.remove('open');document.getElementById('confirmReset').onclick=()=>{try{localStorage.removeItem(KEY)}catch(e){};state={day:'A',data:{},history:[]};document.getElementById('modal').classList.remove('open');render()};
-render();
-</script>
-</body></html>
+const P={
+"Тяни–Толкай": {
+A:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Жим лёжа в Смите","3×8–12",45],["Суперсет 1","Разгибание ног","4×8–12",90],["Суперсет 2","Бабочка","3×8–12",65],["Суперсет 2","Гакк-присед","4×8–12",50],["Суперсет 3","Жим гантелей сидя","3×8–12",12.5],["Суперсет 3","Икры в тренажёре","3×8–12",25],["Суперсет 4","Разгибание рук на блоке","4×8–12",45],["Суперсет 4","Пресс","3×8–12",0],["Кардио","Ходьба на дорожке","10 мин",null]],
+B:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Горизонтальная тяга Hammer","3×8–12",20],["Суперсет 1","Махи с гантелями","6×8–12",7.5],["Суперсет 2","Тяга Т-грифа","3×8–12",35],["Суперсет 2","Сгибание ног сидя","5×8–12",0],["Суперсет 3","Сгибание рук со штангой","4×8–12",45],["Суперсет 3","Шраги с гантелями","4×8–12",22.5],["Суперсет 4","Жим на икры в жимовой платформе","3×8–12",30],["Суперсет 4","Пресс","3×8–12",0],["Кардио","Ходьба на дорожке","10 мин",null]],
+V:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Жим лёжа в Смите 30°","3×8–12",30],["Суперсет 1","Гакк-присед","4×8–12",50],["Суперсет 2","Бабочка","3×8–12",65],["Суперсет 2","Разгибание рук из-за головы","4×8–12",0],["Суперсет 2","Жим на икры","2×8–12",30],["Суперсет 3","Ягодичный мост со штангой","4×8–12",0],["Суперсет 3","Пресс","3×8–12",0],["Кардио","Ходьба на дорожке","10 мин",null]],
+G:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Подтягивания","3×8–12",0],["Суперсет 1","Махи с гантелями","6×8–12",7.5],["Суперсет 2","Тяга ГБ двумя руками","3×8–12",50],["Суперсет 2","Сгибание ног сидя","5×8–12",0],["Суперсет 3","Сгибание рук на наклонной скамье","4×8–12",12.5],["Суперсет 3","Обратная бабочка","4×8–12",35],["Суперсет 4","Икры в тренажёре","3×8–12",25],["Суперсет 4","Пресс","3×8–12",0],["Кардио","Ходьба на дорожке","10 мин",null]]
+},
+"Сплит":{
+A:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Жим лёжа в Смите","4×8–12",45],["Суперсет 1","Сгибание рук со штангой","4×8–12",30],["Суперсет 2","Жим в Смите 30°","4×8–12",40],["Суперсет 2","Сгибание рук с гантелями","4×8–12",12.5],["Суперсет 3","Бабочка","4×8–12",65],["Суперсет 3","Махи с гантелями","4×8–12",12.5],["Суперсет 4","Жим гантелей сидя","4×8–12",12.5],["Суперсет 4","Пресс","4×8–12",0],["Суперсет 4","Икры в тренажёре","4×8–12",25]],
+B:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Тяга Hammer одной рукой","4×8–12",0],["Суперсет 1","Махи с гантелями","4×8–12",12.5],["Суперсет 2","Тяга ГБ широким хватом","4×8–12",45],["Суперсет 2","Разгибание рук на блоке","4×8–12",45],["Суперсет 3","Тяга ВБ широким хватом","4×8–12",55],["Суперсет 3","Французский жим","4×8–12",15],["Суперсет 3","Икры в тренажёре","4×8–12",25],["Суперсет 4","Шраги с гантелями","4×8–12",0],["Суперсет 4","Обратная бабочка","4×8–12",35],["Суперсет 4","Пресс","4×8–12",0]],
+V:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Сгибание ног лёжа","5×8–12",0],["Суперсет 1","Жим ногами","4×8–12",140],["Суперсет 2","Гакк-присед","4×8–12",40],["Суперсет 2","Махи с гантелями","4×8–12",12.5],["Суперсет 3","Сгибание ног сидя","5×8–12",65],["Суперсет 3","Разгибание ног","4×8–12",90],["Суперсет 4","Ягодичный мост со штангой","4×8–12",60],["Суперсет 4","Пресс","4×8–12",0],["Суперсет 4","Икры в тренажёре","4×8–12",25],["Кардио","Ходьба на дорожке","10 мин",null]]
+},
+"Сплит 4 дня":{
+A:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Жим лёжа в Смите","4×8–12",45],["Суперсет 1","Икры в тренажёре","4×8–12",25],["Суперсет 2","Жим в Смите 30°","4×8–12",40],["Суперсет 2","Пресс","4×8–12",0],["Суперсет 3","Бабочка","4×8–12",65],["Суперсет 3","Махи с гантелями","4×8–12",12.5]],
+B:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Тяга ВБ широким хватом","4×8–12",55],["Суперсет 1","Махи с гантелями","4×8–12",12.5],["Суперсет 2","Горизонтальная тяга двумя руками","4×8–12",50],["Суперсет 2","Икры в тренажёре","4×8–12",25],["Суперсет 3","Горизонтальная тяга широким хватом","4×8–12",45],["Суперсет 3","Пресс","4×8–12",0],["Суперсет 3","Шраги с гантелями","4×8–12",0]],
+V:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Сгибание ног лёжа","4×8–12",0],["Суперсет 1","Жим ногами","4×8–12",140],["Отдельно","Гакк-присед","4×8–12",40],["Суперсет 2","Сгибание ног сидя","4×8–12",65],["Суперсет 2","Разгибание ног","4×8–12",90],["Суперсет 3","Ягодичный мост со штангой","4×8–12",60],["Суперсет 3","Икры в тренажёре","4×8–12",25]],
+G:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Разгибание рук на блоке","4×8–12",45],["Суперсет 1","Скамья Скотта","4×8–12",30],["Суперсет 2","Французский жим со штангой","4×8–12",15],["Суперсет 2","Сгибание рук с гантелями","4×8–12",12.5],["Суперсет 3","Махи с гантелями","4×8–12",12.5],["Суперсет 3","Обратная бабочка","4×8–12",35],["Суперсет 4","Жим гантелей сидя","4×8–12",12.5],["Суперсет 4","Пресс","4×8–12",0]]
+},
+"Фулбади":{
+A:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Жим лёжа со штангой","4×8–12",32.5],["Суперсет 1","Тяга ВБ широким хватом","4×8–12",55],["Суперсет 2","Махи с гантелями","4×8–12",12.5],["Суперсет 2","Сгибание ног лёжа","4×8–12",0],["Суперсет 3","Сгибание рук со штангой","4×8–12",30],["Суперсет 3","Разгибание рук на блоке","4×8–12",45],["Суперсет 3","Пресс","4×8–12",0],["Суперсет 4","Разгибание ног","4×8–12",90],["Суперсет 4","Обратная бабочка","4×8–12",35],["Суперсет 4","Икры в жимовой платформе","4×8–12",25]],
+B:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Горизонтальная тяга Hammer","4×8–12",20],["Суперсет 1","Бабочка","4×8–12",65],["Суперсет 2","Махи с гантелями","4×8–12",12.5],["Суперсет 2","Гакк-присед","4×8–12",40],["Суперсет 3","Ягодичный мост со штангой","4×8–12",60],["Суперсет 3","Жим гантелей сидя","4×8–12",12.5],["Суперсет 4","Сгибание ног лёжа","4×8–12",0],["Суперсет 4","Икры в жимовой платформе","4×8–12",25],["Суперсет 4","Пресс","4×8–12",0]],
+V:[["Кардио","Ходьба на дорожке","10 мин",null],["Суперсет 1","Жим в Смите 30°","4×8–12",40],["Суперсет 1","Горизонтальная тяга Hammer","4×8–12",20],["Суперсет 2","Махи с гантелями","4×8–12",12.5],["Суперсет 2","Гакк-присед","4×8–12",40],["Суперсет 3","Французский жим","4×8–12",15],["Суперсет 3","Сгибание рук с гантелями","4×8–12",12.5],["Суперсет 3","Сгибание ног лёжа","4×8–12",0],["Суперсет 4","Икры в жимовой платформе","4×8–12",25],["Суперсет 4","Шраги с гантелями","4×8–12",0],["Суперсет 4","Пресс","4×8–12",0]]
+}};
+let state=JSON.parse(localStorage.getItem("wd")||'{"program":"Тяни–Толкай","day":"A","draft":[],"history":[]}');
+let token=localStorage.getItem("wd_token")||"";
+const $=s=>document.querySelector(s); const save=()=>{localStorage.setItem("wd",JSON.stringify(state)); if(token) fetch("/api/data",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+token},body:JSON.stringify({data:state})}).catch(()=>{})};
+function sets(spec){let m=(spec||"").match(/(\d+)×/);return m?+m[1]:0}
+function initDraft(){state.draft=P[state.program][state.day].map((x,i)=>({name:x[1],spec:x[2],base:x[3],sets:Array.from({length:sets(x[2])},()=>({w:x[3]??"",r:"",ok:false}))}));save()}
+function renderHome(){let n=state.history.length;$("#home").innerHTML=`<div class="card"><h2>Твоя программа</h2><div class="programs grid">${Object.keys(P).map(p=>`<button class="${p==state.program?'active':''}" onclick="chooseProgram('${p}')">${p}</button>`).join("")}</div></div><div class="card"><h2>Статистика</h2><div class="sub">Тренировок сохранено: <b>${n}</b></div><div class="actions"><button class="accent" onclick="tab('workout')">Начать тренировку</button></div></div>`}
+function chooseProgram(p){state.program=p;state.day=Object.keys(P[p])[0];initDraft();renderAll()}
+function renderWorkout(){let days=Object.keys(P[state.program]);$("#workout").innerHTML=`<div class="card"><div class="day"><div><h2>${state.program}</h2><div class="muted">День ${state.day}</div></div><div>${days.map(d=>`<button class="${d==state.day?'active':''}" onclick="chooseDay('${d}')">${d}</button>`).join("")}</div></div></div>${state.draft.map((e,i)=>`<div class="exercise"><div class="ss">${P[state.program][state.day][i][0]}</div><h3>${e.name}</h3><div class="muted">${e.spec}${e.base!==null&&e.base!==undefined?' • базовый вес '+e.base+' кг':''}</div><div class="sets">${e.sets.map((s,j)=>`<div class="set"><span>${j+1}</span><input placeholder="кг" value="${s.w}" onchange="upd(${i},${j},'w',this.value)"><input placeholder="повторы" value="${s.r}" onchange="upd(${i},${j},'r',this.value)"><button class="check ${s.ok?'done':''}" onclick="toggle(${i},${j})">${s.ok?'✓':'○'}</button></div>`).join("")}</div></div>`).join("")}<div class="actions"><button class="accent" onclick="finish()">Сохранить тренировку</button><button onclick="initDraft();renderWorkout()">Сбросить</button></div>`}
+function chooseDay(d){state.day=d;initDraft();renderAll()} function upd(i,j,k,v){state.draft[i].sets[j][k]=v;save()} function toggle(i,j){state.draft[i].sets[j].ok=!state.draft[i].sets[j].ok;save();renderWorkout()}
+async function finish(){state.history.unshift({date:new Date().toISOString(),program:state.program,day:state.day,exercises:state.draft});save();await sync();initDraft();renderAll();alert("Тренировка сохранена")}
+function renderHistory(){if(!state.history.length){$("#history").innerHTML='<div class="empty">История пока пустая</div>';return}$("#history").innerHTML=state.history.map((h,i)=>`<div class="card"><h3>${new Date(h.date).toLocaleDateString('ru-RU')} — ${h.program}, день ${h.day}</h3><div class="muted">${h.exercises.length} упражнений</div></div>`).join("")}
+function renderCalendar(){let by={};state.history.forEach(h=>by[h.date.slice(0,10)]=1);let now=new Date(), y=now.getFullYear(),m=now.getMonth(),days=new Date(y,m+1,0).getDate();let cells=[];for(let d=1;d<=days;d++){let k=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;cells.push(`<div class="card" style="padding:10px;text-align:center">${d}<div>${by[k]?'✓':'·'}</div></div>`)}$("#calendar").innerHTML=`<div class="card"><h2>${now.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})}</h2><div class="grid" style="grid-template-columns:repeat(7,1fr)">${cells.join("")}</div></div>`}
+function tab(t){document.querySelectorAll("main section").forEach(x=>x.classList.add("hidden"));$("#"+t).classList.remove("hidden");document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab==t))}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>tab(b.dataset.tab));
+async function sync(){if(!token)return;try{let r=await fetch("/api/data",{headers:{Authorization:"Bearer "+token}});if(r.ok){let x=await r.json();if(x.data){state=Object.assign(state,x.data);save()}}}catch(e){}}
+async function auth(){let email=prompt("Email");if(!email)return;let password=prompt("Пароль (минимум 6 символов)");if(!password)return;let r=await fetch("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});let x=await r.json();if(!r.ok){alert(x.error||"Ошибка");return}token=x.token;localStorage.setItem("wd_token",token);state=Object.assign(state,x.data||{});save();$("#status").textContent="Синхронизация включена";renderAll()}
+$("#authBtn").onclick=auth;
+async function start(){if(!state.draft.length)initDraft();if(token)$("#status").textContent="Синхронизация включена";renderAll();if(token)await sync()}
+function renderAll(){renderHome();renderWorkout();renderHistory();renderCalendar()}
+start();
+</script></body></html>
