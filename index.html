@@ -107,7 +107,7 @@ B:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Гориз
 V:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим в Смите 30°",4,40,";","Горизонтальная тяга Hammer",4,20],["SS2","Махи с гантелями",4,12.5,";","Хак-присед",4,40],["SS3","Французский жим",4,15,";","Сгибание гантелей",4,12.5,";","Сгибание ног лёжа",4,0],["SS4","Икры в жиме ногами",4,25,";","Шраги",4,0,";","Пресс",4,0]]}}
 };
 const K="wd_cloud_v1";let S=JSON.parse(localStorage.getItem(K)||"null")||{program:"Тяни–Толкай",week:"heavy",day:"A",page:"workout",drafts:{},history:[]};let token=localStorage.getItem("wd_token")||"";
-function fixDrafts(){if(S.v!==4){S.drafts={};S.v=4;save()}}
+function fixDrafts(){if(S.v!==5){S.drafts={};S.v=5;save()}}
 const save=()=>localStorage.setItem(K,JSON.stringify(S)); const esc=x=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 function parse(a){let o=[];for(let r of a){if(r[0].startsWith("SS")||r.length>4){let g=r[0].startsWith("SS")?r[0]:"";let st=g?1:0;for(let i=st;i<r.length;i+=4)if(r[i])o.push({group:g,name:r[i],sets:r[i+1]||1,weight:r[i+2]??0})}else o.push({group:"",name:r[0],sets:r[1]||1,weight:r[2]||0,cardio:String(r[0]).startsWith("Кардио")})}return o}
 function key(){return S.program+"|"+S.week+"|"+S.day}
@@ -212,4 +212,4 @@ function render(){
 
 function setStatus(x){document.getElementById("status").textContent=x}
 program.innerHTML=Object.keys(P).map(x=>`<option>${x}</option>`).join("");program.value=S.program;program.onchange=e=>{S.program=e.target.value;S.day=Object.keys(P[S.program].days)[0];save();render()};heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="light";save();render()};nw.onclick=()=>{S.page="workout";save();render()};nh.onclick=()=>{S.page="history";save();render()};nc.onclick=()=>{S.page="calendar";save();render()};fixDrafts();render();if(token)sync();
-</script></body><!-- update 1 --></html>
+</script></body></html>
