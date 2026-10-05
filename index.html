@@ -21,7 +21,10 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .sp,.round{flex:none;width:46px;height:46px;border-radius:50%}
 .round{border:1px solid var(--line);background:none;padding:0;display:grid;place-items:center}
 #program{flex:1;min-width:0;appearance:none;-webkit-appearance:none;background:none;border:0;text-align:center;text-align-last:center;text-transform:uppercase;font:800 16px var(--h);letter-spacing:.2px}
-.auth{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}.auth input{flex:1;min-width:130px}
+.auth{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px}
+.auth-row{display:flex;gap:7px;flex-wrap:wrap}.auth-row input{flex:1;min-width:130px}
+.user-box{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 14px;margin-bottom:12px;font-size:14px}
+.user-box span{color:var(--accent);font-weight:600}
 .status{font-size:12px;color:var(--muted);margin:0 0 12px}
 
 /* Навигация сверху */
@@ -75,7 +78,8 @@ button.danger{background:#2a1418;color:#ffb6bd}
 .cal .on{background:#243409;border-color:var(--accent)}
 </style></head><body><div class="app">
 <div class="top"><span class="sp"></span><select id="program"></select><button class="round" onclick="tgl()" aria-label="Аккаунт"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/></svg></button></div>
-<div id="authp" class="auth hidden"><input id="email" placeholder="Email"><input id="password" type="password" placeholder="Пароль"><button onclick="register()">Регистрация</button><button onclick="login()">Войти</button></div>
+
+<div id="authp" class="hidden"></div>
 <div id="status" class="status">Данные сохраняются локально. Для синхронизации войди в аккаунт.</div>
 
 <!-- Навигация сверху -->
@@ -106,7 +110,7 @@ A:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим л�
 B:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Горизонтальная тяга Hammer",4,20,";","Бабочка",4,65],["SS2","Махи с гантелями",4,12.5,";","Хак-присед",4,40],["SS3","Ягодичный мост со штангой",4,60,";","Жим гантелей сидя",4,12.5],["SS4","Сгибание ног лёжа",4,0,";","Икры в жиме ногами",4,25,";","Пресс",4,0]],
 V:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим в Смите 30°",4,40,";","Горизонтальная тяга Hammer",4,20],["SS2","Махи с гантелями",4,12.5,";","Хак-присед",4,40],["SS3","Французский жим",4,15,";","Сгибание гантелей",4,12.5,";","Сгибание ног лёжа",4,0],["SS4","Икры в жиме ногами",4,25,";","Шраги",4,0,";","Пресс",4,0]]}}
 };
-const K="wd_cloud_v1";let S=JSON.parse(localStorage.getItem(K)||"null")||{program:"Тяни–Толкай",week:"heavy",day:"A",page:"workout",drafts:{},history:[]};let token=localStorage.getItem("wd_token")||"";
+const K="wd_cloud_v1";let S=JSON.parse(localStorage.getItem(K)||"null")||{program:"Тяни–Толкай",week:"heavy",day:"A",page:"workout",drafts:{},history:[]};let token=localStorage.getItem("wd_token")||""; let showAuth=false; let userEmail=localStorage.getItem("wd_email")||"";
 function fixDrafts(){if(S.v!==5){S.drafts={};S.v=5;save()}}
 const save=()=>localStorage.setItem(K,JSON.stringify(S)); const esc=x=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 function parse(a){let o=[];for(let r of a){if(r[0].startsWith("SS")||r.length>4){let g=r[0].startsWith("SS")?r[0]:"";let st=g?1:0;for(let i=st;i<r.length;i+=4)if(r[i])o.push({group:g,name:r[i],sets:r[i+1]||1,weight:r[i+2]??0})}else o.push({group:"",name:r[0],sets:r[1]||1,weight:r[2]||0,cardio:String(r[0]).startsWith("Кардио")})}return o}
@@ -115,7 +119,8 @@ function draft(){if(!S.drafts[key()])S.drafts[key()]=parse(P[S.program].days[S.d
 const L={A:"А",B:"Б",V:"В",G:"Г"},R="8–12";
 const RING='<div class="ring"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg></div>';
 const ICO='<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20V5m0 0L4.5 8.5M8 5l3.5 3.5M16 4v15m0 0-3.5-3.5M16 19l3.5-3.5"/></svg>';
-function tgl(){document.getElementById("authp").classList.toggle("hidden")}
+function tgl(){showAuth=!showAuth;renderAuth()}
+function logout(){token="";userEmail="";localStorage.removeItem("wd_token");localStorage.removeItem("wd_email");showAuth=false;setStatus("Выход выполнен. Данные сохраняются локально.");renderAuth();render()}
 function lk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k];h+=`<div class="sd ${td?"today":""}"><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"></i><b>${x?(L[x]||x):"--"}</b></div>`}return h}
 function renderW(){let d=draft(),days=Object.keys(P[S.program].days),h="",last="",prev="";
@@ -129,8 +134,8 @@ function up(i,j,k,v){draft()[i].sets[j][k]=v;save()}function tg(i,j){draft()[i].
 async function api(url,opt={}){opt.headers={...(opt.headers||{}),...(token?{Authorization:"Bearer "+token}:{})};let r;try{r=await fetch(url,opt)}catch(e){throw new Error("нет связи с сервером (открой сайт по адресу pages.dev)")}if(r.status===401&&token){token="";localStorage.removeItem("wd_token")}if(!r.ok){let tx="";try{tx=(await r.text()).slice(0,200)}catch(e){}let m=tx;try{m=JSON.parse(tx).error||tx}catch(e){}throw new Error("["+r.status+"] "+(m||r.statusText||"пустой ответ"))}return r.json()}
 async function sync(){if(!token)return;try{let x=await api("/api/data");if(x.data){S=JSON.parse(x.data);fixDrafts();save();render();setStatus("Синхронизировано ☁️")}}catch(e){setStatus("Не удалось синхронизировать: "+e.message)}}
 async function push(){if(!token)return;try{let x=await api("/api/data",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:JSON.stringify(S)})});setStatus("Сохранено в облако ☁")}catch(e){setStatus("Ошибка облачного сохранения: "+e.message)}}
-async function register(){try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"register",email:email.value,password:password.value})});token=r.token;localStorage.setItem("wd_token",token);setStatus("Аккаунт создан и выполнен вход ☁️");await push()}catch(e){setStatus("Ошибка регистрации: "+e.message)}}
-async function login(){try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",email:email.value,password:password.value})});token=r.token;localStorage.setItem("wd_token",token);setStatus("Вход выполнен ☁️");await sync()}catch(e){setStatus("Ошибка входа: "+e.message)}}
+async function register(){let em=document.getElementById("email").value, pw=document.getElementById("password").value;try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"register",email:em,password:pw})});token=r.token;userEmail=em;localStorage.setItem("wd_token",token);localStorage.setItem("wd_email",userEmail);showAuth=false;setStatus("Аккаунт создан и выполнен вход ☁️");renderAuth();await push()}catch(e){setStatus("Ошибка регистрации: "+e.message)}}
+async function login(){let em=document.getElementById("email").value, pw=document.getElementById("password").value;try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",email:em,password:pw})});token=r.token;userEmail=em;localStorage.setItem("wd_token",token);localStorage.setItem("wd_email",userEmail);showAuth=false;setStatus("Вход выполнен ☁️");renderAuth();await sync()}catch(e){setStatus("Ошибка входа: "+e.message)}}
 
 async function finish(){
   let d = draft();
@@ -193,6 +198,17 @@ function hist(){
 
 async function delH(i){S.history.splice(i,1);save();await push();renderH()}async function clearH(){if(confirm("Удалить всю историю?")){S.history=[];save();await push();renderH()}}function renderH(){document.getElementById("history").innerHTML=hist()}
 function cal(){let m={};S.history.forEach(x=>m[lk(new Date(x.date))]=x.day);let d=new Date(),y=d.getFullYear(),mo=d.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate(),h='<div class="card"><b>Календарь</b></div><div class="cal">';for(let i=0;i<first;i++)h+='<div></div>';for(let i=1;i<=n;i++){let x=m[lk(new Date(y,mo,i))];h+=`<div class="${x?"on":""}"><b>${i}</b>${x?`<br>День ${L[x]||x}`:""}</div>`}return h+'</div>'}
+
+function renderAuth(){
+  let el=document.getElementById("authp");
+  if(!showAuth){el.classList.add("hidden");el.innerHTML="";return;}
+  el.classList.remove("hidden");
+  if(token){
+    el.innerHTML=`<div class="user-box"><div>Аккаунт: <span>${esc(userEmail||"Авторизован")}</span></div><button class="danger" onclick="logout()">Выйти</button></div>`;
+  } else {
+    el.innerHTML=`<div class="auth"><div class="auth-row"><input id="email" placeholder="Email"><input id="password" type="password" placeholder="Пароль"></div><div class="auth-row"><button style="flex:1" onclick="register()">Регистрация</button><button style="flex:1;background:var(--accent);color:#000;font-weight:700" onclick="login()">Войти</button></div></div>`;
+  }
+}
 
 function render(){
   ["workout","history","calendar"].forEach(p=>document.getElementById(p).classList.toggle("hidden",S.page!=p));
