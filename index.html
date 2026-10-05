@@ -60,8 +60,8 @@ nav{display:flex;gap:8px;margin:28px 0 0}nav button{flex:1;background:var(--card
 .hc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
 .hdate{font-size:19px;font-weight:700}.hsub{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:4px;color:var(--muted);font-size:15px}.hsub .pill{margin:0}
 .htrash{flex:none;width:44px;height:44px;border-radius:12px;background:#2a1418;color:#ffb6bd;padding:0;display:grid;place-items:center}
-.hrow{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-top:1px solid var(--line);font-size:17px}
-.hn{flex:1}.hs{color:var(--muted);text-align:right;max-width:55%}
+.hrow{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-top:1px solid var(--line);font-size:16px;color:#cdd3dc}
+.hn{flex:1;color:#fff;font-weight:500}.hs{color:#cdd3dc;text-align:right;max-width:55%;font-variant-numeric:tabular-nums}
 .muted{color:var(--muted);font-size:13px;margin-top:2px}
 .exercise-row{padding:9px 0;border-top:1px solid var(--line)}.exercise-row:first-of-type{border-top:0}
 .setline{color:#cdd3dc;font-size:13px;margin-top:3px}
@@ -122,10 +122,51 @@ h+=`<button class="fab" onclick="finish()">Сохранить день ${L[S.day
 function up(i,j,k,v){draft()[i].sets[j][k]=v;save()}function tg(i,j){draft()[i].sets[j].done=!draft()[i].sets[j].done;save();renderW()}function day(x){S.day=x;save();render()}
 async function api(url,opt={}){opt.headers={...(opt.headers||{}),...(token?{Authorization:"Bearer "+token}:{})};let r;try{r=await fetch(url,opt)}catch(e){throw new Error("нет связи с сервером (открой сайт по адресу pages.dev)")}if(r.status===401&&token){token="";localStorage.removeItem("wd_token")}if(!r.ok){let tx="";try{tx=(await r.text()).slice(0,200)}catch(e){}let m=tx;try{m=JSON.parse(tx).error||tx}catch(e){}throw new Error("["+r.status+"] "+(m||r.statusText||"пустой ответ"))}return r.json()}
 async function sync(){if(!token)return;try{let x=await api("/api/data");if(x.data){S=JSON.parse(x.data);fixDrafts();save();render();setStatus("Синхронизировано ☁️")}}catch(e){setStatus("Не удалось синхронизировать: "+e.message)}}
-async function push(){if(!token)return;try{await api("/api/data",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:JSON.stringify(S)})});setStatus("Сохранено в облако ☁️")}catch(e){setStatus("Ошибка облачного сохранения: "+e.message)}}
+async function push(){if(!token)return;try{await api("/api/data",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:JSON.stringify(S)})});setStatus("Сохранено в облако ☁️️")}catch(e){setStatus("Ошибка облачного сохранения: "+e.message)}}
 async function register(){try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"register",email:email.value,password:password.value})});token=r.token;localStorage.setItem("wd_token",token);setStatus("Аккаунт создан и выполнен вход ☁️");await push()}catch(e){setStatus("Ошибка регистрации: "+e.message)}}
 async function login(){try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",email:email.value,password:password.value})});token=r.token;localStorage.setItem("wd_token",token);setStatus("Вход выполнен ☁️");await sync()}catch(e){setStatus("Ошибка входа: "+e.message)}}
-async function finish(){let d=draft(),entry={id:Date.now(),date:new Date().toISOString(),dateText:new Date().toLocaleDateString("ru-RU"),program:S.program,week:S.week,day:S.day,exercises:d.filter(e=>!e.cardio).map(e=>({name:e.name,group:e.group,sets:e.sets.map(s=>({...s}))}))};S.history.unshift(entry);save();await push();S.page="history";render();alert("Тренировка сохранена: "+(S.week==="heavy"?"тяжёлый":"лёгкий")+" день")}
+
+async function finish(){
+  let d = draft();
+  let now = new Date();
+  let todayKey = lk(now);
+  let exercises = d.filter(e => !e.cardio).map(e => ({
+    name: e.name,
+    group: e.group,
+    sets: e.sets.map(s => ({...s}))
+  }));
+
+  // Проверяем, есть ли уже запись за сегодня для текущего дня и программы
+  let existingIndex = S.history.findIndex(x => {
+    let xDate = new Date(x.date);
+    return lk(xDate) === todayKey && x.program === S.program && x.day === S.day && x.week === S.week;
+  });
+
+  if (existingIndex !== -1) {
+    // Обновляем существующую запись за этот день
+    S.history[existingIndex].exercises = exercises;
+    S.history[existingIndex].date = now.toISOString();
+  } else {
+    // Создаем новую запись, если за этот день еще не сохраняли
+    let entry = {
+      id: Date.now(),
+      date: now.toISOString(),
+      dateText: now.toLocaleDateString("ru-RU"),
+      program: S.program,
+      week: S.week,
+      day: S.day,
+      exercises: exercises
+    };
+    S.history.unshift(entry);
+  }
+
+  save();
+  await push();
+  S.page = "history";
+  render();
+  alert("Тренировка сохранена: " + (S.week === "heavy" ? "тяжёлый" : "лёгкий") + " день");
+}
+
 function hist(){let h='<div class="hh"><b>История</b><button class="danger" onclick="clearH()">Очистить</button></div>';if(!S.history.length)return h+'<div class="empty">История пустая</div>';
 const DC={A:"#f5a623",B:"#4f8cff",V:"#ff5d9e",G:"#8b7bff"},TR='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg>';
 S.history.forEach((x,i)=>{let hv=x.week==="heavy",dt=new Date(x.date),ds=isNaN(dt)?esc(x.dateText):dt.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
