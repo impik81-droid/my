@@ -56,17 +56,17 @@ nav{display:flex;gap:8px;margin-bottom:16px}nav button{flex:1;background:var(--c
 .check{width:38px;height:38px;padding:0;border-radius:50%}.check.on{background:var(--accent);color:#000}
 .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:5;background:var(--accent);color:#000;border-radius:999px;padding:20px 28px;font:800 15px var(--h);text-transform:uppercase;box-shadow:0 10px 30px rgba(0,0,0,.7)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:12px}
-.hh{display:flex;align-items:center;justify-content:space-between;margin:0 0 14px}.hh b{font:800 22px var(--h)}.hh button{padding:6px 12px;font-size:13px}
+.hh{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px}.hh b{font:800 20px var(--h)}.hh button{padding:5px 10px;font-size:12px}
 
-/* Компактный стиль истории */
-.hc{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--dc,#f5a623);border-radius:16px;padding:12px 14px 4px;margin-bottom:10px}
-.hc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px}
-.hdate{font-size:16px;font-weight:700;line-height:1.2}
-.hsub{color:var(--muted);font-size:13px;margin-top:2px}
-.htrash{flex:none;width:32px;height:32px;border-radius:8px;background:#2a1418;color:#ffb6bd;padding:0;display:grid;place-items:center}
-.hrow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px;color:#cdd3dc}
-.hn{flex:1;color:#fff;font-weight:500;line-height:1.3}
-.hs{color:#cdd3dc;text-align:right;max-width:55%;font-size:13px;font-variant-numeric:tabular-nums}
+/* Ультракомпактный стиль истории */
+.hc{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--dc,#f5a623);border-radius:12px;padding:8px 10px 2px;margin-bottom:8px}
+.hc-top{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:3px}
+.hdate{font-size:14px;font-weight:700;line-height:1.1}
+.hsub{color:var(--muted);font-size:11px;margin-top:1px}
+.htrash{flex:none;width:26px;height:26px;border-radius:6px;background:#2a1418;color:#ffb6bd;padding:0;display:grid;place-items:center}
+.hrow{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:12px;color:#cdd3dc}
+.hn{flex:1;color:#fff;font-weight:500;line-height:1.2}
+.hs{color:#cdd3dc;text-align:right;max-width:60%;font-size:12px;font-variant-numeric:tabular-nums}
 
 button.danger{background:#2a1418;color:#ffb6bd}
 .empty{text-align:center;color:var(--muted);padding:25px}
@@ -109,7 +109,7 @@ V:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим в 
 const K="wd_cloud_v1";let S=JSON.parse(localStorage.getItem(K)||"null")||{program:"Тяни–Толкай",week:"heavy",day:"A",page:"workout",drafts:{},history:[]};let token=localStorage.getItem("wd_token")||"";
 function fixDrafts(){if(S.v!==4){S.drafts={};S.v=4;save()}}
 const save=()=>localStorage.setItem(K,JSON.stringify(S)); const esc=x=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-function parse(a){let o=[];for(let r of a){if(r[0].startsWith("SS")||r.length>4){let g=r[0].startsWith("SS")?r[0]:"";let st=g?1:0;for(let i=st;i<r.length;i+=4)if(r[i])o.push({group:g,name:r[i],sets:r[i+1]||1,weight:r[i+2]??0})}else o.push({group:"",name:r[0],sets:r[1]||1,weight:r[2]??0,cardio:String(r[0]).startsWith("Кардио")})}return o}
+function parse(a){let o=[];for(let r of a){if(r[0].startsWith("SS")||r.length>4){let g=r[0].startsWith("SS")?r[0]:"";let st=g?1:0;for(let i=st;i<r.length;i+=4)if(r[i])o.push({group:g,name:r[i],sets:r[i+1]||1,weight:r[i+2]??0})}else o.push({group:"",name:r[0],sets:r[1]||1,weight:r[2]||0,cardio:String(r[0]).startsWith("Кардио")})}return o}
 function key(){return S.program+"|"+S.week+"|"+S.day}
 function draft(){if(!S.drafts[key()])S.drafts[key()]=parse(P[S.program].days[S.day]).map(e=>({name:e.name,group:e.group||"",cardio:!!e.cardio,sets:Array.from({length:e.sets},()=>({weight:e.weight||0,reps:"",done:false}))}));save();return S.drafts[key()]}
 const L={A:"А",B:"Б",V:"В",G:"Г"},R="8–12";
@@ -171,7 +171,7 @@ async function finish(){
 function hist(){
   let h='<div class="hh"><b>История</b><button class="danger" onclick="clearH()">Очистить</button></div>';
   if(!S.history.length)return h+'<div class="empty">История пустая</div>';
-  const DC={A:"#f5a623",B:"#4f8cff",V:"#ff5d9e",G:"#8b7bff"},TR='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg>';
+  const DC={A:"#f5a623",B:"#4f8cff",V:"#ff5d9e",G:"#8b7bff"},TR='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg>';
   S.history.forEach((x,i)=>{
     let dt=new Date(x.date),ds=isNaN(dt)?esc(x.dateText):dt.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
     h+=`<div class="hc" style="--dc:${DC[x.day]||"#f5a623"}">
@@ -212,4 +212,4 @@ function render(){
 
 function setStatus(x){document.getElementById("status").textContent=x}
 program.innerHTML=Object.keys(P).map(x=>`<option>${x}</option>`).join("");program.value=S.program;program.onchange=e=>{S.program=e.target.value;S.day=Object.keys(P[S.program].days)[0];save();render()};heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="light";save();render()};nw.onclick=()=>{S.page="workout";save();render()};nh.onclick=()=>{S.page="history";save();render()};nc.onclick=()=>{S.page="calendar";save();render()};fixDrafts();render();if(token)sync();
-</script></body><!-- update 1 --></html>
+</script></body></html>
