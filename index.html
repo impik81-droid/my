@@ -122,7 +122,7 @@ h+=`<button class="fab" onclick="finish()">Сохранить день ${L[S.day
 function up(i,j,k,v){draft()[i].sets[j][k]=v;save()}function tg(i,j){draft()[i].sets[j].done=!draft()[i].sets[j].done;save();renderW()}function day(x){S.day=x;save();render()}
 async function api(url,opt={}){opt.headers={...(opt.headers||{}),...(token?{Authorization:"Bearer "+token}:{})};let r;try{r=await fetch(url,opt)}catch(e){throw new Error("нет связи с сервером (открой сайт по адресу pages.dev)")}if(r.status===401&&token){token="";localStorage.removeItem("wd_token")}if(!r.ok){let tx="";try{tx=(await r.text()).slice(0,200)}catch(e){}let m=tx;try{m=JSON.parse(tx).error||tx}catch(e){}throw new Error("["+r.status+"] "+(m||r.statusText||"пустой ответ"))}return r.json()}
 async function sync(){if(!token)return;try{let x=await api("/api/data");if(x.data){S=JSON.parse(x.data);fixDrafts();save();render();setStatus("Синхронизировано ☁️")}}catch(e){setStatus("Не удалось синхронизировать: "+e.message)}}
-async function push(){if(!token)return;try{await api("/api/data",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:JSON.stringify(S)})});setStatus("Сохранено в облако ☁️️")}catch(e){setStatus("Ошибка облачного сохранения: "+e.message)}}
+async function push(){if(!token)return;try{let x=await api("/api/data",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:JSON.stringify(S)})});setStatus("Сохранено в облако ☁️️")}catch(e){setStatus("Ошибка облачного сохранения: "+e.message)}}
 async function register(){try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"register",email:email.value,password:password.value})});token=r.token;localStorage.setItem("wd_token",token);setStatus("Аккаунт создан и выполнен вход ☁️");await push()}catch(e){setStatus("Ошибка регистрации: "+e.message)}}
 async function login(){try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",email:email.value,password:password.value})});token=r.token;localStorage.setItem("wd_token",token);setStatus("Вход выполнен ☁️");await sync()}catch(e){setStatus("Ошибка входа: "+e.message)}}
 
@@ -136,18 +136,18 @@ async function finish(){
     sets: e.sets.map(s => ({...s}))
   }));
 
-  // Проверяем, есть ли уже запись за сегодня для текущего дня и программы
+  // Ищем существующую запись за сегодня строго для этого же дня программы и недели
   let existingIndex = S.history.findIndex(x => {
     let xDate = new Date(x.date);
     return lk(xDate) === todayKey && x.program === S.program && x.day === S.day && x.week === S.week;
   });
 
   if (existingIndex !== -1) {
-    // Обновляем существующую запись за этот день
+    // Обновляем существующую карточку за этот день
     S.history[existingIndex].exercises = exercises;
     S.history[existingIndex].date = now.toISOString();
   } else {
-    // Создаем новую запись, если за этот день еще не сохраняли
+    // Создаем новую запись, если за этот день такого дня программы еще не было
     let entry = {
       id: Date.now(),
       date: now.toISOString(),
