@@ -78,7 +78,7 @@ button.danger{background:#2a1418;color:#ffb6bd}
 <div id="authp" class="auth hidden"><input id="email" placeholder="Email"><input id="password" type="password" placeholder="Пароль"><button onclick="register()">Регистрация</button><button onclick="login()">Войти</button></div>
 <div id="status" class="status">Данные сохраняются локально. Для синхронизации войди в аккаунт.</div>
 
-<!-- Навигация теперь поднята наверх -->
+<!-- Навигация сверху -->
 <nav><button id="nw" class="active">Тренировка</button><button id="nh">История</button><button id="nc">Календарь</button></nav>
 
 <div id="wkstrip" class="wkstrip"></div>
@@ -142,7 +142,6 @@ async function finish(){
     sets: e.sets.map(s => ({...s}))
   }));
 
-  // Очищаем старые дубликаты за сегодня строго для этого же дня программы и недели
   S.history = S.history.filter(x => {
     let xDate = new Date(x.date);
     let isToday = lk(xDate) === todayKey;
@@ -199,7 +198,6 @@ function render(){
   ["workout","history","calendar"].forEach(p=>document.getElementById(p).classList.toggle("hidden",S.page!=p));
   document.getElementById("ctl").classList.toggle("hidden",S.page!="workout");
   
-  // Управление активными кнопками навигации сверху
   nw.classList.toggle("active",S.page=="workout");
   nh.classList.toggle("active",S.page=="history");
   nc.classList.toggle("active",S.page=="calendar");
