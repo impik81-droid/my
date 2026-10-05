@@ -1,53 +1,133 @@
 <!doctype html>
 <html lang="ru"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Workout Diary Cloud</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Workout Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b0d10;--card:#15181d;--card2:#1c2027;--text:#f4f6f8;--muted:#9ca3af;--line:#2a3038;--accent:#4f8cff;--green:#35c978;--red:#ff5d6c}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app{max-width:760px;margin:auto;padding:14px 12px 40px}
-.top{display:flex;justify-content:space-between;gap:10px;align-items:center}h1{font-size:22px;margin:0}.sub{font-size:12px;color:var(--muted)}
-select,input,button{font:inherit}select,input{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px}button{border:0;border-radius:10px;padding:10px 13px;background:var(--card2);color:var(--text)}button.primary{background:var(--accent)}button.danger{background:#432027;color:#ffb6bd}
-.auth{display:flex;gap:7px;margin:12px 0}.auth input{flex:1}.status{font-size:12px;color:var(--muted);margin:5px 0 12px}
-.segment,.days{display:flex;gap:6px}.segment{background:var(--card);padding:4px;border:1px solid var(--line);border-radius:12px}.segment button{flex:1}.active{background:var(--accent)!important}
-.days{overflow:auto;margin:10px 0}.day{min-width:58px;border:1px solid var(--line)}.a{border-color:#4f8cff}.b{border-color:#b56cff}.v{border-color:#ff9f43}.g{border-color:#35c978}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0}.title{font-weight:700}.muted{color:var(--muted)}.ss{font-size:12px;color:#8d98a8;margin:12px 0 7px;text-transform:uppercase}
-.ex{padding:10px 0;border-top:1px solid var(--line)}.exname{font-weight:600;margin-bottom:7px}.sets{display:grid;grid-template-columns:28px 1fr 1fr 38px;gap:6px;align-items:center}.sets span{font-size:12px;color:var(--muted);text-align:center}.sets input{width:100%;padding:7px}.check{width:34px;height:34px;padding:0}.check.on{background:var(--green);color:#07140c}
-.actions{display:flex;gap:8px;position:sticky;bottom:10px;margin-top:14px}.actions button{flex:1}nav{display:flex;gap:7px;margin:14px 0}nav button{flex:1}
-.hidden{display:none}.history-item{border-left:4px solid var(--accent);padding-left:10px}.history-head{display:flex;justify-content:space-between;gap:8px}.exercise-row{padding:8px 0;border-top:1px solid var(--line)}.setline{color:#cdd3dc;font-size:13px;margin-top:3px}.empty{text-align:center;color:var(--muted);padding:25px}.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.cal div{min-height:42px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:5px;font-size:11px}
+:root{color-scheme:dark;-webkit-tap-highlight-color:transparent;--bg:#000;--card:#121214;--card2:#1b1b1e;--text:#fff;--muted:#8e8e93;--line:#26262b;--accent:#c4f94d;--h:Unbounded,"Arial Black",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.app{max-width:760px;margin:auto;padding:calc(14px + env(safe-area-inset-top)) 16px calc(120px + env(safe-area-inset-bottom))}
+button{font:inherit;border:0;color:var(--text);background:var(--card2);border-radius:12px;padding:10px 13px}
+input,select{font:inherit;color:var(--text)}
+input{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px}
+.hidden{display:none!important}
+select option{background:#1b1b1e;color:#fff}
+button,select{-webkit-tap-highlight-color:transparent;outline:0}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:18px}
+.sp,.round{flex:none;width:46px;height:46px;border-radius:50%}
+.round{border:1px solid var(--line);background:none;padding:0;display:grid;place-items:center}
+#program{flex:1;min-width:0;appearance:none;-webkit-appearance:none;background:none;border:0;text-align:center;text-align-last:center;text-transform:uppercase;font:800 16px var(--h);letter-spacing:.2px}
+.auth{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}.auth input{flex:1;min-width:130px}
+.status{font-size:12px;color:var(--muted);margin:0 0 12px}
+.wkstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px}
+.sd{display:flex;flex-direction:column;align-items:center;gap:8px;padding:11px 0;border-radius:20px;color:#d6d6da;font-size:14px}
+.sd.today{background:var(--card2);color:#fff}
+.sd i{width:10px;height:10px;border-radius:50%;background:#2b2b30}.sd i.on{background:var(--accent)}
+.sd b{font:800 14px var(--h);color:#8a8a90}.sd.today b{color:#fff}
+.ctl{display:flex;gap:10px;margin-bottom:26px}
+.seg{display:flex;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px}
+#dayseg{flex:1}
+.seg button{flex:1;background:none;border-radius:999px;padding:11px 12px;font:800 16px var(--h);color:#cfcfd4}
+.seg button.active{background:#000;color:#fff}
+.wk button{font:600 16px -apple-system,system-ui,sans-serif;white-space:nowrap}
+.wk button.active::after{content:"";display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--accent);margin-left:8px}
+.sec,.ss{font:800 17px var(--h);text-transform:uppercase}
+.sec{margin:6px 0 16px}
+.ss{display:flex;align-items:center;gap:12px;margin:24px 0 16px;padding-top:24px;border-top:1px solid var(--line)}
+.sec+.ss{border-top:0;padding-top:0;margin-top:30px}
+.ss svg{color:var(--accent);flex:none}
+.row{display:flex;align-items:center;gap:16px}
+.ring{flex:none;width:64px;height:64px;border-radius:50%;border:3px solid #2c2c31;background:#ececef;color:#111;display:grid;place-items:center}
+.nm{font-size:19px;font-weight:600;line-height:1.2}
+.sb{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:6px;color:var(--muted);font-size:16px}
+.sb em{font-style:normal;color:#fff;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:15px}
+.ex{margin-bottom:24px}
+.sets{display:grid;grid-template-columns:28px 1fr 1fr 40px;gap:6px;align-items:center;margin-top:12px}
+.sets span{font-size:12px;color:var(--muted);text-align:center}
+.sets input{width:100%;padding:9px;text-align:center}
+.check{width:38px;height:38px;padding:0;border-radius:50%}.check.on{background:var(--accent);color:#000}
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:5;background:var(--accent);color:#000;border-radius:999px;padding:20px 28px;font:800 15px var(--h);text-transform:uppercase;box-shadow:0 10px 30px rgba(0,0,0,.7)}
+nav{display:flex;gap:8px;margin:28px 0 0}nav button{flex:1;background:var(--card);border:1px solid var(--line)}nav .active{background:var(--accent);color:#000;border-color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:12px}
+.history-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.pill{display:inline-block;margin-top:7px;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:600}.pill.h{background:var(--accent);color:#000}.pill.l{background:var(--card2);color:#fff;border:1px solid var(--line)}
+.muted{color:var(--muted);font-size:13px;margin-top:2px}
+.exercise-row{padding:9px 0;border-top:1px solid var(--line)}.exercise-row:first-of-type{border-top:0}
+.setline{color:#cdd3dc;font-size:13px;margin-top:3px}
+button.danger{background:#2a1418;color:#ffb6bd}.actions{display:flex;gap:8px;margin-top:10px}.actions button{flex:1}
+.empty{text-align:center;color:var(--muted);padding:25px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal div{min-height:48px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px;font-size:11px}
+.cal .on{background:#243409;border-color:var(--accent)}
 </style></head><body><div class="app">
-<div class="top"><div><h1>Workout Diary</h1><div class="sub">Облачная синхронизация</div></div><select id="program"></select></div>
-<div class="auth"><input id="email" placeholder="Email"><input id="password" type="password" placeholder="Пароль"><button onclick="register()">Регистрация</button><button onclick="login()">Войти</button></div>
+<div class="top"><span class="sp"></span><select id="program"></select><button class="round" onclick="tgl()" aria-label="Аккаунт"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/></svg></button></div>
+<div id="authp" class="auth hidden"><input id="email" placeholder="Email"><input id="password" type="password" placeholder="Пароль"><button onclick="register()">Регистрация</button><button onclick="login()">Войти</button></div>
 <div id="status" class="status">Данные сохраняются локально. Для синхронизации войди в аккаунт.</div>
-<div class="segment"><button id="heavy">Тяжёлая</button><button id="light">Лёгкая</button></div>
+<div id="wkstrip" class="wkstrip"></div>
+<div id="ctl" class="ctl"><div class="seg" id="dayseg"></div><div class="seg wk"><button id="heavy">Тяж</button><button id="light">Лёг</button></div></div>
 <div id="workout"></div><div id="history" class="hidden"></div><div id="calendar" class="hidden"></div>
 <nav><button id="nw" class="active">Тренировка</button><button id="nh">История</button><button id="nc">Календарь</button></nav>
 </div>
 <script>
 const P={
-"Тяни–Толкай":{days:{A:[["Кардио: Ходьба на дорожке",1,10],["SS1","Жим лёжа в Смите",3,45,"Разгибание ног",4,90],["SS2","Бабочка",3,65,"Хак-присед",4,50],["SS3","Жим гантелей сидя",3,12.5,"Икры в тренажёре",3,25],["SS4","Разгибание рук на блоке",4,45,"Пресс",3,0],["Кардио: Ходьба на дорожке",1,10]],B:[["Кардио: Ходьба на дорожке",1,10],["SS1","Горизонтальная тяга Hammer",3,20,"Махи с гантелями",6,7.5],["SS2","Тяга Т-грифа",3,35,"Сгибание ног сидя",5,0],["SS3","Сгибание рук со штангой",4,45,"Шраги с гантелями",4,22.5],["SS4","Икры в жиме ногами",3,30,"Пресс",3,0],["Кардио: Ходьба на дорожке",1,10]],V:[["Кардио: Ходьба на дорожке",1,10],["SS1","Жим в Смите 30°",3,30,"Хак-присед",4,50],["SS2","Бабочка",3,65,"Разгибание рук из-за головы",4,0,"Икры в жиме ногами",2,30],["SS3","Ягодичный мост со штангой",4,0,"Пресс",3,0],["Кардио: Ходьба на дорожке",1,10]],G:[["Кардио: Ходьба на дорожке",1,10],["SS1","Подтягивания",3,0,"Махи с гантелями",6,7.5],["SS2","Тяга гантели двумя руками",3,50,"Сгибание ног сидя",5,0],["SS3","Сгибание на наклонной скамье",4,12.5,"Обратная бабочка",4,35],["SS4","Икры в тренажёре",3,25,"Пресс",3,0],["Кардио: Ходьба на дорожке",1,10]]}},
-"Сплит":{days:{A:[["Кардио: Ходьба на дорожке",1,10],["SS1","Жим лёжа в Смите",4,45,"Сгибание рук со штангой",4,30],["SS2","Жим в Смите 30°",4,40,"Сгибание гантелей",4,12.5],["SS3","Бабочка",4,65,"Махи с гантелями",4,12.5],["SS4","Жим гантелей сидя",4,12.5,"Пресс",4,0,"Икры",4,25]],B:[["Кардио: Ходьба на дорожке",1,10],["SS1","Тяга Hammer одной рукой",4,0,"Махи с гантелями",4,12.5],["SS2","Тяга гантели широким хватом",4,45,"Разгибание рук на блоке",4,45],["SS3","Тяга верхнего блока широким хватом",4,55,"Французский жим",4,15,"Икры",4,25],["SS4","Шраги с гантелями",4,0,"Обратная бабочка",4,35,"Пресс",4,0]],V:[["Кардио: Ходьба на дорожке",1,10],["SS1","Сгибание ног лёжа",5,0,"Жим ногами",4,140],["SS2","Хак-присед",4,40,"Махи с гантелями",4,12.5],["SS3","Сгибание ног сидя",5,65,"Разгибание ног",4,90],["SS4","Ягодичный мост со штангой",4,60,"Пресс",4,0,"Икры",4,25],["Кардио: Ходьба на дорожке",1,10]]}},
-"Сплит 4 дня":{days:{A:[["Кардио: Ходьба на дорожке",1,10],["SS1","Жим лёжа в Смите",4,45,"Икры",4,25],["SS2","Жим в Смите 30°",4,40,"Пресс",4,0],["SS3","Бабочка",4,65,"Махи с гантелями",4,12.5]],B:[["Кардио: Ходьба на дорожке",1,10],["SS1","Тяга верхнего блока широким хватом",4,55,"Махи с гантелями",4,12.5],["SS2","Горизонтальная тяга двумя руками",4,50,"Икры",4,25],["SS3","Горизонтальная тяга широким хватом",4,45,"Пресс",4,0,"Шраги",4,0]],V:[["Кардио: Ходьба на дорожке",1,10],["SS1","Сгибание ног лёжа",4,0,"Жим ногами",4,140],["Хак-присед",4,40],["SS2","Сгибание ног сидя",4,65,"Разгибание ног",4,90],["SS3","Ягодичный мост со штангой",4,60,"Икры",4,25]],G:[["Кардио: Ходьба на дорожке",1,10],["SS1","Разгибание рук на блоке",4,45,"Скамья Скотта",4,30],["SS2","Французский жим",4,15,"Сгибание гантелей",4,12.5],["SS3","Махи с гантелями",4,12.5,"Обратная бабочка",4,35],["SS4","Жим гантелей сидя",4,12.5,"Пресс",4,0]]}},
-"Фулбади":{days:{A:[["Кардио: Ходьба на дорожке",1,10],["SS1","Жим лёжа со штангой",4,32.5,"Тяга верхнего блока широким хватом",4,55],["SS2","Махи с гантелями",4,12.5,"Сгибание ног лёжа",4,0],["SS3","Сгибание рук со штангой",4,30,"Разгибание рук на блоке",4,45,"Пресс",4,0],["SS4","Разгибание ног",4,90,"Обратная бабочка",4,35,"Икры в жиме ногами",4,25]],B:[["Кардио: Ходьба на дорожке",1,10],["SS1","Горизонтальная тяга Hammer",4,20,"Бабочка",4,65],["SS2","Махи с гантелями",4,12.5,"Хак-присед",4,40],["SS3","Ягодичный мост со штангой",4,60,"Жим гантелей сидя",4,12.5],["SS4","Сгибание ног лёжа",4,0,"Икры в жиме ногами",4,25,"Пресс",4,0]],V:[["Кардио: Ходьба на дорожке",1,10],["SS1","Жим в Смите 30°",4,40,"Горизонтальная тяга Hammer",4,20],["SS2","Махи с гантелями",4,12.5,"Хак-присед",4,40],["SS3","Французский жим",4,15,"Сгибание гантелей",4,12.5,"Сгибание ног лёжа",4,0],["SS4","Икры в жиме ногами",4,25,"Шраги",4,0,"Пресс",4,0]]}}
+"Тяни–Толкай":{days:{
+A:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим лёжа в Смите",3,45,";","Разгибание ног",4,90],["SS2","Бабочка",3,65,";","Хак-присед",4,50],["SS3","Жим гантелей сидя",3,12.5,";","Икры в тренажёре",3,25],["SS4","Разгибание рук на блоке",4,45,";","Пресс",3,0],["Кардио: Ходьба на дорожке",1,10,""]],
+B:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Горизонтальная тяга Hammer",3,20,";","Махи с гантелями",6,7.5],["SS2","Тяга Т-грифа",3,35,";","Сгибание ног сидя",5,0],["SS3","Сгибание рук со штангой",4,45,";","Шраги с гантелями",4,22.5],["SS4","Икры в жиме ногами",3,30,";","Пресс",3,0],["Кардио: Ходьба на дорожке",1,10,""]],
+V:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим в Смите 30°",3,30,";","Хак-присед",4,50],["SS2","Бабочка",3,65,";","Разгибание рук из-за головы",4,0,";","Икры в жиме ногами",2,30],["SS3","Присед в гакк на ягодицу",4,0,";","Пресс",3,0],["Кардио: Ходьба на дорожке",1,10,""]],
+G:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Подтягивания",3,0,";","Махи с гантелями",6,7.5],["SS2","Тяга горизонтального блока двумя руками",3,50,";","Сгибание ног сидя",5,0],["SS3","Сгибание гантелей на наклонной скамье под 60°",4,12.5,";","Обратная бабочка",4,35],["SS4","Икры в тренажёре",3,25,";","Пресс",3,0],["Кардио: Ходьба на дорожке",1,10,""]]}},
+"Сплит":{days:{
+A:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим лёжа в Смите",4,45,";","Сгибание рук со штангой",4,30],["SS2","Жим в Смите 30°",4,40,";","Сгибание гантелей",4,12.5],["SS3","Бабочка",4,65,";","Махи с гантелями",4,12.5],["SS4","Жим гантелей сидя",4,12.5,";","Пресс",4,0,";","Икры",4,25]],
+B:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Тяга Hammer одной рукой",4,0,";","Махи с гантелями",4,12.5],["SS2","Тяга гантели широким хватом",4,45,";","Разгибание рук на блоке",4,45],["SS3","Тяга верхнего блока широким хватом",4,55,";","Французский жим",4,15,";","Икры",4,25],["SS4","Шраги с гантелями",4,0,";","Обратная бабочка",4,35,";","Пресс",4,0]],
+V:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Сгибание ног лёжа",5,0,";","Жим ногами",4,140],["SS2","Хак-присед",4,40,";","Махи с гантелями",4,12.5],["SS3","Сгибание ног сидя",5,65,";","Разгибание ног",4,90],["SS4","Ягодичный мост со штангой",4,60,";","Пресс",4,0,";","Икры",4,25],["Кардио: Ходьба на дорожке",1,10,""]]}},
+"Сплит 4 дня":{days:{
+A:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим лёжа в Смите",4,45,";","Икры",4,25],["SS2","Жим в Смите 30°",4,40,";","Пресс",4,0],["SS3","Бабочка",4,65,";","Махи с гантелями",4,12.5]],
+B:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Тяга верхнего блока широким хватом",4,55,";","Махи с гантелями",4,12.5],["SS2","Горизонтальная тяга двумя руками",4,50,";","Икры",4,25],["SS3","Горизонтальная тяга широким хватом",4,45,";","Пресс",4,0,";","Шраги",4,0]],
+V:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Сгибание ног лёжа",4,0,";","Жим ногами",4,140],["Хак-присед",4,40,""],["SS2","Сгибание ног сидя",4,65,";","Разгибание ног",4,90],["SS3","Ягодичный мост со штангой",4,60,";","Икры",4,25]],
+G:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Разгибание рук на блоке",4,45,";","Скамья Скотта",4,30],["SS2","Французский жим",4,15,";","Сгибание гантелей",4,12.5],["SS3","Махи с гантелями",4,12.5,";","Обратная бабочка",4,35],["SS4","Жим гантелей сидя",4,12.5,";","Пресс",4,0]]}},
+"Фулбади":{days:{
+A:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим лёжа со штангой",4,32.5,";","Тяга верхнего блока широким хватом",4,55],["SS2","Махи с гантелями",4,12.5,";","Сгибание ног лёжа",4,0],["SS3","Сгибание рук со штангой",4,30,";","Разгибание рук на блоке",4,45,";","Пресс",4,0],["SS4","Разгибание ног",4,90,";","Обратная бабочка",4,35,";","Икры в жиме ногами",4,25]],
+B:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Горизонтальная тяга Hammer",4,20,";","Бабочка",4,65],["SS2","Махи с гантелями",4,12.5,";","Хак-присед",4,40],["SS3","Ягодичный мост со штангой",4,60,";","Жим гантелей сидя",4,12.5],["SS4","Сгибание ног лёжа",4,0,";","Икры в жиме ногами",4,25,";","Пресс",4,0]],
+V:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим в Смите 30°",4,40,";","Горизонтальная тяга Hammer",4,20],["SS2","Махи с гантелями",4,12.5,";","Хак-присед",4,40],["SS3","Французский жим",4,15,";","Сгибание гантелей",4,12.5,";","Сгибание ног лёжа",4,0],["SS4","Икры в жиме ногами",4,25,";","Шраги",4,0,";","Пресс",4,0]]}}
 };
 const K="wd_cloud_v1";let S=JSON.parse(localStorage.getItem(K)||"null")||{program:"Тяни–Толкай",week:"heavy",day:"A",page:"workout",drafts:{},history:[]};let token=localStorage.getItem("wd_token")||"";
+function fixDrafts(){if(S.v!==4){S.drafts={};S.v=4;save()}}
 const save=()=>localStorage.setItem(K,JSON.stringify(S)); const esc=x=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-function parse(a){let o=[];for(let r of a){if(r[0].startsWith("SS")||r.length>4){let g=r[0].startsWith("SS")?r[0]:"";let st=g?1:0;for(let i=st;i<r.length;i+=4)if(r[i])o.push({group:g,name:r[i],sets:r[i+1],weight:r[i+2]})}else o.push({name:r[0],sets:r[1],weight:r[2],cardio:true})}return o}
+function parse(a){let o=[];for(let r of a){if(r[0].startsWith("SS")||r.length>4){let g=r[0].startsWith("SS")?r[0]:"";let st=g?1:0;for(let i=st;i<r.length;i+=4)if(r[i])o.push({group:g,name:r[i],sets:r[i+1]||1,weight:r[i+2]??0})}else o.push({group:"",name:r[0],sets:r[1]||1,weight:r[2]??0,cardio:String(r[0]).startsWith("Кардио")})}return o}
 function key(){return S.program+"|"+S.week+"|"+S.day}
 function draft(){if(!S.drafts[key()])S.drafts[key()]=parse(P[S.program].days[S.day]).map(e=>({name:e.name,group:e.group||"",cardio:!!e.cardio,sets:Array.from({length:e.sets},()=>({weight:e.weight||0,reps:"",done:false}))}));save();return S.drafts[key()]}
-function renderW(){let d=draft(),days=Object.keys(P[S.program].days),h='<div class="days">'+days.map(x=>`<button class="day ${x.toLowerCase()} ${x==S.day?"active":""}" onclick="day('${x}')">День ${x}</button>`).join("")+'</div>';
-h+=`<div class="card"><b>${esc(S.program)} — День ${S.day}</b> · ${S.week==="heavy"?"Тяжёлая":"Лёгкая"} неделя</div>`;let last="";
-d.forEach((e,i)=>{if(e.cardio){h+=`<div class="card">${esc(e.name)}</div>`;return}if(e.group&&e.group!=last){h+=`<div class="ss">${e.group}</div>`;last=e.group}h+=`<div class="card"><div class="exname">${esc(e.name)}</div><div class="sets"><span>№</span><span>Вес</span><span>Повт.</span><span>✓</span>`;e.sets.forEach((s,j)=>h+=`<span>${j+1}</span><input value="${esc(s.weight)}" type="number" step=".5" onchange="up(${i},${j},'weight',this.value)"><input value="${esc(s.reps)}" type="number" onchange="up(${i},${j},'reps',this.value)"><button class="check ${s.done?"on":""}" onclick="tg(${i},${j})">${s.done?"✓":"○"}</button>`);h+='</div></div>'});h+='<div class="actions"><button class="primary" onclick="finish()">Сохранить тренировку</button></div>';document.getElementById("workout").innerHTML=h}
+const L={A:"А",B:"Б",V:"В",G:"Г"},R="8–12";
+const RING='<div class="ring"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg></div>';
+const ICO='<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20V5m0 0L4.5 8.5M8 5l3.5 3.5M16 4v15m0 0-3.5-3.5M16 19l3.5-3.5"/></svg>';
+function tgl(){document.getElementById("authp").classList.toggle("hidden")}
+function lk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k];h+=`<div class="sd ${td?"today":""}"><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"></i><b>${x?(L[x]||x):"--"}</b></div>`}return h}
+function renderW(){let d=draft(),days=Object.keys(P[S.program].days),h="",last="",prev="";
+document.getElementById("dayseg").innerHTML=days.map(x=>`<button class="${x==S.day?"active":""}" onclick="day('${x}')">${L[x]||x}</button>`).join("");
+d.forEach((e,i)=>{if(e.cardio){if(prev!="c")h+='<div class="sec">Кардио</div>';h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name.replace(/^Кардио:\s*/,""))}</div><div class="sb">${esc(e.sets[0].weight)} минут</div></div></div></div>`;prev="c";return}
+if(e.group&&e.group!=last)h+=`<div class="ss">${ICO}Суперсет ${esc(e.group.replace("SS",""))}</div>`;last=e.group||"";prev="e";
+h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name)}</div><div class="sb">${e.sets.length} × ${R} повторений <em>${esc(e.sets[0].weight)} кг</em></div></div></div><div class="sets"><span>№</span><span>Вес, кг</span><span>Повт.</span><span>✓</span>`;
+e.sets.forEach((s,j)=>h+=`<span>${j+1}</span><input value="${esc(s.weight)}" type="number" step=".5" inputmode="decimal" onchange="up(${i},${j},'weight',this.value)"><input value="${esc(s.reps)}" type="number" inputmode="numeric" onchange="up(${i},${j},'reps',this.value)"><button class="check ${s.done?"on":""}" onclick="tg(${i},${j})">${s.done?"✓":"○"}</button>`);h+='</div></div>'});
+h+=`<button class="fab" onclick="finish()">Сохранить день ${L[S.day]||S.day}</button>`;document.getElementById("workout").innerHTML=h}
 function up(i,j,k,v){draft()[i].sets[j][k]=v;save()}function tg(i,j){draft()[i].sets[j].done=!draft()[i].sets[j].done;save();renderW()}function day(x){S.day=x;save();render()}
 async function api(url,opt={}){opt.headers={...(opt.headers||{}),...(token?{Authorization:"Bearer "+token}:{})};let r=await fetch(url,opt);if(!r.ok)throw new Error(await r.text());return r.json()}
-async function sync(){if(!token)return;try{let x=await api("/api/data");if(x.data){S=JSON.parse(x.data);save();render();setStatus("Синхронизировано ☁️")}}catch(e){setStatus("Не удалось синхронизировать: "+e.message)}}
+async function sync(){if(!token)return;try{let x=await api("/api/data");if(x.data){S=JSON.parse(x.data);fixDrafts();save();render();setStatus("Синхронизировано ☁️")}}catch(e){setStatus("Не удалось синхронизировать: "+e.message)}}
 async function push(){if(!token)return;try{await api("/api/data",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:JSON.stringify(S)})});setStatus("Сохранено в облако ☁️")}catch(e){setStatus("Ошибка облачного сохранения")}}
 async function register(){try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"register",email:email.value,password:password.value})});token=r.token;localStorage.setItem("wd_token",token);setStatus("Аккаунт создан и выполнен вход ☁️");await push()}catch(e){setStatus("Ошибка регистрации: "+e.message)}}
 async function login(){try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",email:email.value,password:password.value})});token=r.token;localStorage.setItem("wd_token",token);setStatus("Вход выполнен ☁️");await sync()}catch(e){setStatus("Ошибка входа: "+e.message)}}
-async function finish(){let d=draft(),entry={id:Date.now(),date:new Date().toISOString(),dateText:new Date().toLocaleDateString("ru-RU"),program:S.program,week:S.week,day:S.day,exercises:d.filter(e=>!e.cardio).map(e=>({name:e.name,group:e.group,sets:e.sets.map(s=>({...s}))}))};S.history.unshift(entry);save();await push();S.page="history";render();alert("Тренировка сохранена")}
-function hist(){let h='<div class="card"><b>История</b><div class="actions"><button class="danger" onclick="clearH()">Удалить всю историю</button></div></div>';if(!S.history.length)return h+'<div class="empty">История пустая</div>';S.history.forEach((x,i)=>{h+=`<div class="card history-item"><div class="history-head"><b>${x.dateText} — ${esc(x.program)}, День ${x.day}</b><button class="danger" onclick="delH(${i})">Удалить</button></div><div class="muted">${x.week==="heavy"?"Тяжёлая":"Лёгкая"} неделя</div>`;x.exercises.forEach(e=>{h+=`<div class="exercise-row"><b>${esc(e.name)}</b>`;e.sets.forEach((s,j)=>{if(s.done||s.reps!==""||s.weight!=="")h+=`<div class="setline">Подход ${j+1}: ${s.weight||0} кг × ${s.reps||"—"} повт.${s.done?" ✓":""}</div>`});h+='</div>'});h+='</div>'});return h}
+async function finish(){let d=draft(),entry={id:Date.now(),date:new Date().toISOString(),dateText:new Date().toLocaleDateString("ru-RU"),program:S.program,week:S.week,day:S.day,exercises:d.filter(e=>!e.cardio).map(e=>({name:e.name,group:e.group,sets:e.sets.map(s=>({...s}))}))};S.history.unshift(entry);save();await push();S.page="history";render();alert("Тренировка сохранена: "+(S.week==="heavy"?"тяжёлый":"лёгкий")+" день")}
+function hist(){let h='<div class="card"><b>История</b><div class="actions"><button class="danger" onclick="clearH()">Удалить всю историю</button></div></div>';if(!S.history.length)return h+'<div class="empty">История пустая</div>';S.history.forEach((x,i)=>{h+=`<div class="card history-item"><div class="history-head"><div><b>${x.dateText} — ${esc(x.program)}, День ${L[x.day]||x.day}</b><div><span class="pill ${x.week==="heavy"?"h":"l"}">${x.week==="heavy"?"Тяжёлый":"Лёгкий"} день</span></div></div><button class="danger" onclick="delH(${i})">Удалить</button></div>`;x.exercises.forEach(e=>{h+=`<div class="exercise-row"><b>${esc(e.name)}</b>`;e.sets.forEach((s,j)=>{if(s.done||s.reps!==""||s.weight!=="")h+=`<div class="setline">Подход ${j+1}: ${s.weight||0} кг × ${s.reps||"—"} повт.${s.done?" ✓":""}</div>`});h+='</div>'});h+='</div>'});return h}
 async function delH(i){S.history.splice(i,1);save();await push();renderH()}async function clearH(){if(confirm("Удалить всю историю?")){S.history=[];save();await push();renderH()}}function renderH(){document.getElementById("history").innerHTML=hist()}
-function cal(){let m={};S.history.forEach(x=>m[x.date.slice(0,10)]=x.day);let d=new Date(),y=d.getFullYear(),mo=d.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate(),h='<div class="card"><b>Календарь</b></div><div class="cal">';for(let i=0;i<first;i++)h+='<div></div>';for(let i=1;i<=n;i++){let k=new Date(y,mo,i).toISOString().slice(0,10);h+=`<div>${i}${m[k]?`<br>День ${m[k]}`:""}</div>`}return h+'</div>'}
-function render(){document.getElementById("workout").classList.toggle("hidden",S.page!="workout");document.getElementById("history").classList.toggle("hidden",S.page!="history");document.getElementById("calendar").classList.toggle("hidden",S.page!="calendar");if(S.page=="workout")renderW();if(S.page=="history")renderH();if(S.page=="calendar")document.getElementById("calendar").innerHTML=cal()}
+function cal(){let m={};S.history.forEach(x=>m[lk(new Date(x.date))]=x.day);let d=new Date(),y=d.getFullYear(),mo=d.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate(),h='<div class="card"><b>Календарь</b></div><div class="cal">';for(let i=0;i<first;i++)h+='<div></div>';for(let i=1;i<=n;i++){let x=m[lk(new Date(y,mo,i))];h+=`<div class="${x?"on":""}"><b>${i}</b>${x?`<br>День ${L[x]||x}`:""}</div>`}return h+'</div>'}
+function render(){["workout","history","calendar"].forEach(p=>document.getElementById(p).classList.toggle("hidden",S.page!=p));
+document.getElementById("ctl").classList.toggle("hidden",S.page!="workout");
+nw.classList.toggle("active",S.page=="workout");nh.classList.toggle("active",S.page=="history");nc.classList.toggle("active",S.page=="calendar");
+heavy.classList.toggle("active",S.week=="heavy");light.classList.toggle("active",S.week=="light");
+document.getElementById("wkstrip").innerHTML=strip();
+if(S.page=="workout")renderW();if(S.page=="history")renderH();if(S.page=="calendar")document.getElementById("calendar").innerHTML=cal()}
 function setStatus(x){document.getElementById("status").textContent=x}
-program.innerHTML=Object.keys(P).map(x=>`<option>${x}</option>`).join("");program.value=S.program;program.onchange=e=>{S.program=e.target.value;S.day=Object.keys(P[S.program].days)[0];save();render()};heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="light";save();render()};nw.onclick=()=>{S.page="workout";save();render()};nh.onclick=()=>{S.page="history";save();render()};nc.onclick=()=>{S.page="calendar";save();render()};render();if(token)sync();
+program.innerHTML=Object.keys(P).map(x=>`<option>${x}</option>`).join("");program.value=S.program;program.onchange=e=>{S.program=e.target.value;S.day=Object.keys(P[S.program].days)[0];save();render()};heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="light";save();render()};nw.onclick=()=>{S.page="workout";save();render()};nh.onclick=()=>{S.page="history";save();render()};nc.onclick=()=>{S.page="calendar";save();render()};fixDrafts();render();if(token)sync();
 </script></body></html>
