@@ -1,22 +1,24 @@
-export async function onRequestPost({request, env}) {
-  const body = await request.json();
+import {hashPassword,checkPassword,isLegacy,makeToken} from "../_auth.js";
+const err=(m,s)=>Response.json({error:m},{status:s});
+export async function onRequestPost({request,env}){
+  if(!env.AUTH_SECRET) return err("На сервере не задан AUTH_SECRET",500);
+  if(!env.DB) return err("К проекту не привязана база DB",500);
+  let body;try{body=await request.json()}catch{return err("Некорректный запрос",400)}
   const {action,email,password}=body||{};
-  if(!email||!password) return Response.json({error:"Email и пароль обязательны"}, {status:400});
-  const norm=email.trim().toLowerCase();
-  const hash=await sha256(password);
+  if(!email||!password) return err("Email и пароль обязательны",400);
+  const norm=String(email).trim().toLowerCase();
   if(action==="register"){
     const exists=await env.DB.prepare("SELECT id FROM users WHERE email=?").bind(norm).first();
-    if(exists) return Response.json({error:"Пользователь уже существует"}, {status:409});
+    if(exists) return err("Пользователь уже существует",409);
+    const hash=await hashPassword(String(password));
     const r=await env.DB.prepare("INSERT INTO users(email,password_hash,created_at) VALUES(?,?,datetime('now'))").bind(norm,hash).run();
-    const token=await makeToken(r.meta.last_row_id,norm,env);
-    return Response.json({token});
+    return Response.json({token:await makeToken(r.meta.last_row_id,env.AUTH_SECRET)});
   }
   if(action==="login"){
-    const u=await env.DB.prepare("SELECT id,email,password_hash FROM users WHERE email=?").bind(norm).first();
-    if(!u||u.password_hash!==hash) return Response.json({error:"Неверный email или пароль"}, {status:401});
-    return Response.json({token:await makeToken(u.id,u.email,env)});
+    const u=await env.DB.prepare("SELECT id,password_hash FROM users WHERE email=?").bind(norm).first();
+    if(!u||!await checkPassword(String(password),u.password_hash)) return err("Неверный email или пароль",401);
+    if(isLegacy(u.password_hash)) await env.DB.prepare("UPDATE users SET password_hash=? WHERE id=?").bind(await hashPassword(String(password)),u.id).run();
+    return Response.json({token:await makeToken(u.id,env.AUTH_SECRET)});
   }
-  return Response.json({error:"Неизвестное действие"}, {status:400});
+  return err("Неизвестное действие",400);
 }
-async function sha256(s){const b=new TextEncoder().encode(s),h=await crypto.subtle.digest("SHA-256",b);return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,"0")).join("")}
-async function makeToken(id,email,env){const raw=`${id}.${email}.${env.AUTH_SECRET||"change-me"}`;return btoa(raw)}
