@@ -121,7 +121,6 @@ V:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим в 
 };
 
 const K="wd_cloud_v2";
-// Автоматическая миграция со старого ключа wd_cloud_v1, если он существовал
 let rawData = localStorage.getItem(K) || localStorage.getItem("wd_cloud_v1");
 let S = rawData ? JSON.parse(rawData) : {program:"Тяни–Толкай",week:"heavy",day:"A",page:"workout",drafts:{},history:[]};
 
@@ -183,6 +182,49 @@ function logout(){
   renderAuth();
 }
 
+async function api(url,opt={}){
+  opt.headers={...(opt.headers||{}),...(token?{Authorization:"Bearer "+token}:{})};
+  let r;
+  try{r=await fetch(url,opt)}catch(e){throw new Error("нет связи с сервером")}
+  if(r.status===401&&token){token="";localStorage.removeItem("wd_token");localStorage.removeItem("wd_email")}
+  if(!r.ok){let tx="";try{tx=(await r.text()).slice(0,200)}catch(e){}let m=tx;try{m=JSON.parse(tx).error||tx}catch(e){}throw new Error("["+r.status+"] "+m)}
+  return r.json();
+}
+
+async function login(){
+  let email=document.getElementById("email").value.trim();
+  let password=document.getElementById("password").value;
+  if(!email||!password){alert("Введите email и пароль");return;}
+  try{
+    let res=await api("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});
+    token=res.token;userEmail=email;
+    localStorage.setItem("wd_token",token);
+    localStorage.setItem("wd_email",userEmail);
+    setStatus("Успешный вход! Синхронизация...");
+    await sync();
+    showAuth=false;
+    renderAuth();
+  }catch(e){alert("Ошибка входа: "+e.message)}
+}
+
+async function register(){
+  let email=document.getElementById("email").value.trim();
+  let password=document.getElementById("password").value;
+  if(!email||!password){alert("Введите email и пароль");return;}
+  try{
+    let res=await api("/api/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});
+    token=res.token;userEmail=email;
+    localStorage.setItem("wd_token",token);
+    localStorage.setItem("wd_email",userEmail);
+    setStatus("Регистрация успешна!");
+    showAuth=false;
+    renderAuth();
+  }catch(e){alert("Ошибка регистрации: "+e.message)}
+}
+
+async function sync(){if(!token)return;try{let x=await api("/api/data");if(x.data){S=JSON.parse(x.data);fixDrafts();save();render();setStatus("Синхронизированно ☁")}}catch(e){}}
+async function push(){if(!token)return;try{await api("/api/data",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:JSON.stringify(S)})});setStatus("Сохранено в облако ☁")}catch(e){}}
+
 function lk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k];h+=`<div class="sd ${td?"today":""}"><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"></i><b>${x?(L[x]||x):"--"}</b></div>`}return h}
 
@@ -197,7 +239,6 @@ h+=`<button class="fab" onclick="finish()">Сохранить день ${L[S.day
 function up(i,j,k,v){
   let sets = draft()[i].sets;
   sets[j][k] = v;
-  
   if(j === 0){
     for(let idx = 1; idx < sets.length; idx++){
       sets[idx][k] = v;
@@ -207,17 +248,12 @@ function up(i,j,k,v){
       sets[j+1][k] = v;
     }
   }
-  
   save();
   renderW();
 }
 
 function tg(i,j){draft()[i].sets[j].done=!draft()[i].sets[j].done;save();renderW()}
 function day(x){S.day=x;save();render()}
-
-async function api(url,opt={}){opt.headers={...(opt.headers||{}),...(token?{Authorization:"Bearer "+token}:{})};let r;try{r=await fetch(url,opt)}catch(e){throw new Error("нет связи с сервером")}if(r.status===401&&token){token="";localStorage.removeItem("wd_token")}if(!r.ok){let tx="";try{tx=(await r.text()).slice(0,200)}catch(e){}throw new Error("["+r.status+"]")}return r.json()}
-async function sync(){if(!token)return;try{let x=await api("/api/data");if(x.data){S=JSON.parse(x.data);fixDrafts();save();render();}}catch(e){}}
-async function push(){if(!token)return;try{await api("/api/data",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:JSON.stringify(S)})});}catch(e){}}
 
 async function finish(){
   let d = draft();
@@ -363,6 +399,8 @@ function render(){
   if(S.page=="history")renderH();
   if(S.page=="calendar")document.getElementById("calendar").innerHTML=cal()
 }
+
+function setStatus(x){document.getElementById("status").textContent=x}
 
 program.innerHTML=Object.keys(P).map(x=>`<option>${x}</option>`).join("");program.value=S.program;program.onchange=e=>{S.program=e.target.value;S.day=Object.keys(P[S.program].days)[0];save();render()};heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="light";save();render()};nw.onclick=()=>{S.page="workout";save();render()};nh.onclick=()=>{S.page="history";save();render()};nc.onclick=()=>{S.page="calendar";save();render()};fixDrafts();render();if(token)sync();
 </script>
