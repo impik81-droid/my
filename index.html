@@ -179,11 +179,12 @@ function hist(){
   const DC={A:"#f5a623",B:"#4f8cff",V:"#ff5d9e",G:"#8b7bff"},TR='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg>';
   S.history.forEach((x,i)=>{
     let dt=new Date(x.date),ds=isNaN(dt)?esc(x.dateText):dt.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
+    let wName = x.week === "light" ? "Лёгкий день" : "Тяжёлый день";
     h+=`<div class="hc" style="--dc:${DC[x.day]||"#f5a623"}">
       <div class="hc-top">
         <div>
           <div class="hdate">${ds}</div>
-          <div class="hsub">День ${L[x.day]||x.day} (${esc(x.program)})</div>
+          <div class="hsub">День ${L[x.day]||x.day} (${esc(x.program)}) • <b>${wName}</b></div>
         </div>
         <button class="htrash" aria-label="Удалить" onclick="if(confirm('Удалить тренировку?'))delH(${i})">${TR}</button>
       </div>`;
