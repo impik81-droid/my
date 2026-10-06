@@ -120,7 +120,7 @@ B:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Гориз
 V:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим в Смите 30°",4,40,";","Горизонтальная тяга Hammer",4,20],["SS2","Махи с гантелями",4,12.5,";","Хак-присед",4,40],["SS3","Французский жим",4,15,";","Сгибание гантелей",4,12.5,";","Сгибание ног лёжа",4,0],["SS4","Икры в жиме ногами",4,25,";","Шраги",4,0,";","Пресс",4,0]]}}
 };
 const K="wd_cloud_v2";let S=JSON.parse(localStorage.getItem(K)||"null")||{program:"Тяни–Толкай",week:"heavy",day:"A",page:"workout",drafts:{},history:[]};let token=localStorage.getItem("wd_token")||""; let showAuth=false; let userEmail=localStorage.getItem("wd_email")||"";
-function fixDrafts(){if(S.v!==6){S.drafts={};S.v=6;save()}}
+function fixDrafts(){if(S.v!==7){S.drafts={};S.v=7;save()}}
 const save=()=>localStorage.setItem(K,JSON.stringify(S)); const esc=x=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 
 function parse(a){let o=[];for(let r of a){if(r[0].startsWith("SS")||r.length>4){let g=r[0].startsWith("SS")?r[0]:"";let st=g?1:0;for(let i=st;i<r.length;i+=4)if(r[i])o.push({group:g,name:r[i],sets:r[i+1]||1,weight:r[i+2]??0})}else o.push({group:"",name:r[0],sets:r[1]||1,weight:r[2]||0,cardio:String(r[0]).startsWith("Кардио")})}return o}
@@ -176,9 +176,17 @@ h+=`<button class="fab" onclick="finish()">Сохранить день ${L[S.day
 function up(i,j,k,v){
   let sets = draft()[i].sets;
   sets[j][k] = v;
-  if(j+1 < sets.length && (sets[j+1][k] === "" || sets[j+1][k] == 0)){
-    sets[j+1][k] = v;
+  
+  if(j === 0){
+    for(let idx = 1; idx < sets.length; idx++){
+      sets[idx][k] = v;
+    }
+  } else {
+    if(j+1 < sets.length && (sets[j+1][k] === "" || sets[j+1][k] == 0)){
+      sets[j+1][k] = v;
+    }
   }
+  
   save();
   renderW();
 }
