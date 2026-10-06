@@ -61,15 +61,22 @@ nav{display:flex;gap:8px;margin-bottom:16px}nav button{flex:1;background:var(--c
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:12px}
 .hh{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px}.hh b{font:800 20px var(--h)}.hh button{padding:5px 10px;font-size:12px}
 
-/* Ультракомпактный стиль истории */
-.hc{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--dc,#f5a623);border-radius:12px;padding:8px 10px 2px;margin-bottom:8px}
+/* История и компактные карточки */
+.hc{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--dc,#f5a623);border-radius:12px;padding:8px 10px 4px;margin-bottom:8px}
 .hc-top{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:3px}
 .hdate{font-size:14px;font-weight:700;line-height:1.1}
 .hsub{color:var(--muted);font-size:11px;margin-top:1px}
-.htrash{flex:none;width:26px;height:26px;border-radius:6px;background:#2a1418;color:#ffb6bd;padding:0;display:grid;place-items:center}
+.h-actions{display:flex;gap:4px}
+.hbtn{background:var(--card2);color:var(--muted);padding:4px 8px;font-size:11px;border-radius:6px;border:1px solid var(--line)}
+.htrash{background:#2a1418;color:#ffb6bd}
 .hrow{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:12px;color:#cdd3dc}
 .hn{flex:1;color:#fff;font-weight:500;line-height:1.2}
 .hs{color:#cdd3dc;text-align:right;max-width:60%;font-size:12px;font-variant-numeric:tabular-nums}
+
+/* Блок графика */
+.chart-box{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;font-size:12px}
+.chart-title{font-weight:700;color:var(--accent);margin-bottom:6px;display:flex;justify-content:space-between}
+.chart-svg{width:100%;height:80px;overflow:visible}
 
 button.danger{background:#2a1418;color:#ffb6bd}
 .empty{text-align:center;color:var(--muted);padding:25px}
@@ -110,123 +117,40 @@ A:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим л�
 B:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Горизонтальная тяга Hammer",4,20,";","Бабочка",4,65],["SS2","Махи с гантелями",4,12.5,";","Хак-присед",4,40],["SS3","Ягодичный мост со штангой",4,60,";","Жим гантелей сидя",4,12.5],["SS4","Сгибание ног лёжа",4,0,";","Икры в жиме ногами",4,25,";","Пресс",4,0]],
 V:[["Кардио: Ходьба на дорожке",1,10,""],["SS1","Жим в Смите 30°",4,40,";","Горизонтальная тяга Hammer",4,20],["SS2","Махи с гантелями",4,12.5,";","Хак-присед",4,40],["SS3","Французский жим",4,15,";","Сгибание гантелей",4,12.5,";","Сгибание ног лёжа",4,0],["SS4","Икры в жиме ногами",4,25,";","Шраги",4,0,";","Пресс",4,0]]}}
 };
-const K="wd_cloud_v1";let S=JSON.parse(localStorage.getItem(K)||"null")||{program:"Тяни–Толкай",week:"heavy",day:"A",page:"workout",drafts:{},history:[]};let token=localStorage.getItem("wd_token")||""; let showAuth=false; let userEmail=localStorage.getItem("wd_email")||"";
-function fixDrafts(){if(S.v!==5){S.drafts={};S.v=5;save()}}
+const K="wd_cloud_v2";let S=JSON.parse(localStorage.getItem(K)||"null")||{program:"Тяни–Толкай",week:"heavy",day:"A",page:"workout",drafts:{},history:[]};let token=localStorage.getItem("wd_token")||""; let showAuth=false; let userEmail=localStorage.getItem("wd_email")||"";
+function fixDrafts(){if(S.v!==6){S.drafts={};S.v=6;save()}}
 const save=()=>localStorage.setItem(K,JSON.stringify(S)); const esc=x=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+
 function parse(a){let o=[];for(let r of a){if(r[0].startsWith("SS")||r.length>4){let g=r[0].startsWith("SS")?r[0]:"";let st=g?1:0;for(let i=st;i<r.length;i+=4)if(r[i])o.push({group:g,name:r[i],sets:r[i+1]||1,weight:r[i+2]??0})}else o.push({group:"",name:r[0],sets:r[1]||1,weight:r[2]||0,cardio:String(r[0]).startsWith("Кардио")})}return o}
 function key(){return S.program+"|"+S.week+"|"+S.day}
-function draft(){if(!S.drafts[key()])S.drafts[key()]=parse(P[S.program].days[S.day]).map(e=>({name:e.name,group:e.group||"",cardio:!!e.cardio,sets:Array.from({length:e.sets},()=>({weight:e.weight||0,reps:"",done:false}))}));save();return S.drafts[key()]}
-const L={A:"А",B:"Б",V:"В",G:"Г"},R="8–12";
-const RING='<div class="ring"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg></div>';
-const ICO='<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20V5m0 0L4.5 8.5M8 5l3.5 3.5M16 4v15m0 0-3.5-3.5M16 19l3.5-3.5"/></svg>';
-function tgl(){showAuth=!showAuth;renderAuth()}
-function logout(){token="";userEmail="";localStorage.removeItem("wd_token");localStorage.removeItem("wd_email");showAuth=false;setStatus("Выход выполнен. Данные сохраняются локально.");renderAuth();render()}
-function lk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k];h+=`<div class="sd ${td?"today":""}"><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"></i><b>${x?(L[x]||x):"--"}</b></div>`}return h}
-function renderW(){let d=draft(),days=Object.keys(P[S.program].days),h="",last="",prev="";
-document.getElementById("dayseg").innerHTML=days.map(x=>`<button class="${x==S.day?"active":""}" onclick="day('${x}')">${L[x]||x}</button>`).join("");
-d.forEach((e,i)=>{if(e.cardio){if(prev!="c")h+='<div class="sec">Кардио</div>';h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name.replace(/^Кардио:\s*/,""))}</div><div class="sb">${esc(e.sets[0].weight)} минут</div></div></div></div>`;prev="c";return}
-if(e.group&&e.group!=last)h+=`<div class="ss">${ICO}Суперсет ${esc(e.group.replace("SS",""))}</div>`;last=e.group||"";prev="e";
-h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name)}</div><div class="sb">${e.sets.length} × ${R} повторений <em>${esc(e.sets[0].weight)} кг</em></div></div></div><div class="sets"><span>№</span><span>Вес, кг</span><span>Повт.</span><span>✓</span>`;
-e.sets.forEach((s,j)=>h+=`<span>${j+1}</span><input value="${esc(s.weight)}" type="number" step=".5" inputmode="decimal" onchange="up(${i},${j},'weight',this.value)"><input value="${esc(s.reps)}" type="number" inputmode="numeric" onchange="up(${i},${j},'reps',this.value)"><button class="check ${s.done?"on":""}" onclick="tg(${i},${j})">${s.done?"✓":"○"}</button>`);h+='</div></div>'});
-h+=`<button class="fab" onclick="finish()">Сохранить день ${L[S.day]||S.day}</button>`;document.getElementById("workout").innerHTML=h}
-function up(i,j,k,v){draft()[i].sets[j][k]=v;save()}function tg(i,j){draft()[i].sets[j].done=!draft()[i].sets[j].done;save();renderW()}function day(x){S.day=x;save();render()}
-async function api(url,opt={}){opt.headers={...(opt.headers||{}),...(token?{Authorization:"Bearer "+token}:{})};let r;try{r=await fetch(url,opt)}catch(e){throw new Error("нет связи с сервером (открой сайт по адресу pages.dev)")}if(r.status===401&&token){token="";localStorage.removeItem("wd_token")}if(!r.ok){let tx="";try{tx=(await r.text()).slice(0,200)}catch(e){}let m=tx;try{m=JSON.parse(tx).error||tx}catch(e){}throw new Error("["+r.status+"] "+(m||r.statusText||"пустой ответ"))}return r.json()}
-async function sync(){if(!token)return;try{let x=await api("/api/data");if(x.data){S=JSON.parse(x.data);fixDrafts();save();render();setStatus("Синхронизировано ☁️")}}catch(e){setStatus("Не удалось синхронизировать: "+e.message)}}
-async function push(){if(!token)return;try{let x=await api("/api/data",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:JSON.stringify(S)})});setStatus("Сохранено в облако ☁")}catch(e){setStatus("Ошибка облачного сохранения: "+e.message)}}
-async function register(){let em=document.getElementById("email").value, pw=document.getElementById("password").value;try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"register",email:em,password:pw})});token=r.token;userEmail=em;localStorage.setItem("wd_token",token);localStorage.setItem("wd_email",userEmail);showAuth=false;setStatus("Аккаунт создан и выполнен вход ☁️");renderAuth();await push()}catch(e){setStatus("Ошибка регистрации: "+e.message)}}
-async function login(){let em=document.getElementById("email").value, pw=document.getElementById("password").value;try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",email:em,password:pw})});token=r.token;userEmail=em;localStorage.setItem("wd_token",token);localStorage.setItem("wd_email",userEmail);showAuth=false;setStatus("Вход выполнен ☁️");renderAuth();await sync()}catch(e){setStatus("Ошибка входа: "+e.message)}}
 
-async function finish(){
-  let d = draft();
-  let now = new Date();
-  let todayKey = lk(now);
-  let exercises = d.filter(e => !e.cardio).map(e => ({
-    name: e.name,
-    group: e.group,
-    sets: e.sets.map(s => ({...s}))
-  }));
-
-  S.history = S.history.filter(x => {
-    let xDate = new Date(x.date);
-    let isToday = lk(xDate) === todayKey;
-    let isSameWorkout = x.program === S.program && x.day === S.day && x.week === S.week;
-    return !(isToday && isSameWorkout);
-  });
-
-  let entry = {
-    id: Date.now(),
-    date: now.toISOString(),
-    dateText: now.toLocaleDateString("ru-RU"),
-    program: S.program,
-    week: S.week,
-    day: S.day,
-    exercises: exercises
-  };
-  
-  S.history.unshift(entry);
-
-  save();
-  await push();
-  S.page = "history";
-  render();
-  alert("Тренировка сохранена: " + (S.week === "heavy" ? "тяжёлый" : "лёгкий") + " день");
-}
-
-function hist(){
-  let h='<div class="hh"><b>История</b><button class="danger" onclick="clearH()">Очистить</button></div>';
-  if(!S.history.length)return h+'<div class="empty">История пустая</div>';
-  const DC={A:"#f5a623",B:"#4f8cff",V:"#ff5d9e",G:"#8b7bff"},TR='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg>';
-  S.history.forEach((x,i)=>{
-    let dt=new Date(x.date),ds=isNaN(dt)?esc(x.dateText):dt.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
-    let wName = x.week === "light" ? "Лёгкий день" : "Тяжёлый день";
-    h+=`<div class="hc" style="--dc:${DC[x.day]||"#f5a623"}">
-      <div class="hc-top">
-        <div>
-          <div class="hdate">${ds}</div>
-          <div class="hsub">День ${L[x.day]||x.day} (${esc(x.program)}) • <b>${wName}</b></div>
-        </div>
-        <button class="htrash" aria-label="Удалить" onclick="if(confirm('Удалить тренировку?'))delH(${i})">${TR}</button>
-      </div>`;
-    x.exercises.forEach(e=>{
-      let s=e.sets.filter(s=>s.done||s.reps!=="").map(s=>`${s.weight||0}×${s.reps||"—"}`).join(", ");
-      h+=`<div class="hrow"><span class="hn">${esc(e.name)}</span><span class="hs">${s||"—"}</span></div>`;
-    });
-    h+='</div>';
-  });
-  return h;
-}
-
-async function delH(i){S.history.splice(i,1);save();await push();renderH()}async function clearH(){if(confirm("Удалить всю историю?")){S.history=[];save();await push();renderH()}}function renderH(){document.getElementById("history").innerHTML=hist()}
-function cal(){let m={};S.history.forEach(x=>m[lk(new Date(x.date))]=x.day);let d=new Date(),y=d.getFullYear(),mo=d.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate(),h='<div class="card"><b>Календарь</b></div><div class="cal">';for(let i=0;i<first;i++)h+='<div></div>';for(let i=1;i<=n;i++){let x=m[lk(new Date(y,mo,i))];h+=`<div class="${x?"on":""}"><b>${i}</b>${x?`<br>День ${L[x]||x}`:""}</div>`}return h+'</div>'}
-
-function renderAuth(){
-  let el=document.getElementById("authp");
-  if(!showAuth){el.classList.add("hidden");el.innerHTML="";return;}
-  el.classList.remove("hidden");
-  if(token){
-    el.innerHTML=`<div class="user-box"><div>Аккаунт: <span>${esc(userEmail||"Авторизован")}</span></div><button class="danger" onclick="logout()">Выйти</button></div>`;
-  } else {
-    el.innerHTML=`<div class="auth"><div class="auth-row"><input id="email" placeholder="Email"><input id="password" type="password" placeholder="Пароль"></div><div class="auth-row"><button style="flex:1" onclick="register()">Регистрация</button><button style="flex:1;background:var(--accent);color:#000;font-weight:700" onclick="login()">Войти</button></div></div>`;
+// Функция поиска последнего веса и повторений из истории для упражнения
+function getLastExData(name){
+  for(let h of S.history){
+    for(let e of h.exercises){
+      if(e.name===name && e.sets && e.sets.length>0){
+        let lastValidSet = [...e.sets].reverse().find(s => s.weight!=="" || s.reps!=="");
+        if(lastValidSet) return {weight: lastValidSet.weight, reps: lastValidSet.reps};
+      }
+    }
   }
+  return null;
 }
 
-function render(){
-  ["workout","history","calendar"].forEach(p=>document.getElementById(p).classList.toggle("hidden",S.page!=p));
-  document.getElementById("ctl").classList.toggle("hidden",S.page!="workout");
+function draft(){
+  if(!S.drafts[key()]){
+    let base = parse(P[S.program].days[S.day]).map(e=>{
+      let lastData = getLastExData(e.name);
+      let defaultW = lastData ? lastData.weight : (e.weight||0);
+      let defaultR = lastData ? lastData.reps : "";
+      return {
+        name: e.name,
+        group: e.group||"",
+        cardio: !!e.cardio,
+        sets: Array.from({length:e.sets},()=>({weight:defaultW,reps:defaultR,done:false}))
+      };
+    });
+    S.drafts[key()]=base;
+    save();
+  }
   
-  nw.classList.toggle("active",S.page=="workout");
-  nh.classList.toggle("active",S.page=="history");
-  nc.classList.toggle("active",S.page=="calendar");
-  
-  heavy.classList.toggle("active",S.week=="heavy");
-  light.classList.toggle("active",S.week=="light");
-  document.getElementById("wkstrip").innerHTML=strip();
-  if(S.page=="workout")renderW();
-  if(S.page=="history")renderH();
-  if(S.page=="calendar")document.getElementById("calendar").innerHTML=cal()
-}
-
-function setStatus(x){document.getElementById("status").textContent=x}
-program.innerHTML=Object.keys(P).map(x=>`<option>${x}</option>`).join("");program.value=S.program;program.onchange=e=>{S.program=e.target.value;S.day=Object.keys(P[S.program].days)[0];save();render()};heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="light";save();render()};nw.onclick=()=>{S.page="workout";save();render()};nh.onclick=()=>{S.page="history";save();render()};nc.onclick=()=>{S.page="calendar";save();render()};fixDrafts();render();if(token)sync();
-</script></body></html>
