@@ -164,7 +164,6 @@ function toast(m,undo){let e=document.getElementById("toast");e.innerHTML=esc(m)
 function lastEx(n){for(let h of S.history){let e=h.exercises.find(e=>e.name===n);if(e)return e}return null}
 function hint(n){let e=lastEx(n);if(!e)return"";let a=e.sets.filter(s=>s.reps!=="");if(!a.length)return"";let w=Math.max(...a.map(s=>+s.weight||0)),up=w>0&&a.every(s=>+s.reps>=12&&(+s.weight||0)===w);return`<div class="hint">Прошлый раз: ${esc(a.map(s=>(s.weight||0)+"×"+s.reps).join(" · "))}${up?` <b>→ попробуй ${w+2.5} кг</b>`:""}</div>`}
 const mw=e=>Math.max(0,...e.sets.map(s=>+s.weight||0)),e1=s=>{let r=+s.reps||0;return r?Math.round((+s.weight||0)*(1+r/30)):0};
-const ton=x=>Math.round(x.exercises.reduce((a,e)=>a+e.sets.reduce((b,s)=>b+(+s.weight||0)*(+s.reps||0),0),0));
 function pr(i,e){let w=mw(e);if(!w)return false;let seen=false;for(let k=i+1;k<S.history.length;k++){let o=S.history[k].exercises.find(o=>o.name===e.name);if(o){seen=true;if(mw(o)>=w)return false}}return seen}
 const wk=d=>lk(new Date(d.getFullYear(),d.getMonth(),d.getDate()-((d.getDay()+6)%7)));
 function merge(a,b){let m=new Map();[...b,...a].forEach(x=>m.set(x.id||x.date,x));return[...m.values()].sort((x,y)=>new Date(y.date)-new Date(x.date))}
@@ -175,7 +174,7 @@ function delSet(i){let s=draft()[i].sets;if(s.length>1){s.pop();save();renderW()
 function ren(i){pick(i,"w")}
 function note(i,v){draft()[i].note=v;save()}
 function cmo(d){S.co=Math.min(0,(S.co||0)+d);save();render()}
-function stats(){let H=S.history,t=new Date(),mk=lk(t).slice(0,7),mc=H.filter(x=>lk(new Date(x.date)).startsWith(mk)).length,b={},c={};H.forEach(x=>{let k=wk(new Date(x.date));b[k]=(b[k]||0)+ton(x);c[k]=1});let ks=[];for(let i=7;i>=0;i--)ks.push(wk(new Date(t.getFullYear(),t.getMonth(),t.getDate()-7*i)));let st=0;for(let i=ks.length-1;i>=0;i--){if(c[ks[i]])st++;else if(i<ks.length-1)break}let mx=Math.max(1,...ks.map(k=>b[k]||0)),bars=ks.map((k,i)=>{let v=b[k]||0,hh=Math.round(v/mx*50);return`<rect x="${i*36+4}" y="${60-hh}" width="28" height="${hh}" rx="4" fill="var(--accent)" opacity="${v?1:.2}"/>`}).join("");return`<div class="card"><div style="display:flex;justify-content:space-around;text-align:center"><div><b class="big">${mc}</b><div class="hsub">за месяц</div></div><div><b class="big">${st}</b><div class="hsub">недель подряд</div></div><div><b class="big">${Math.round(H.reduce((a,x)=>a+ton(x),0)/1000)} т</b><div class="hsub">общий тоннаж</div></div></div><div class="hsub" style="margin:12px 0 4px">Тоннаж по неделям</div><svg viewBox="0 0 288 62" width="100%">${bars}</svg></div>`}
+function stats(){let H=S.history,t=new Date(),mk=lk(t).slice(0,7),mc=H.filter(x=>lk(new Date(x.date)).startsWith(mk)).length,c={};H.forEach(x=>{let k=wk(new Date(x.date));c[k]=1});let ks=[];for(let i=7;i>=0;i--)ks.push(wk(new Date(t.getFullYear(),t.getMonth(),t.getDate()-7*i)));let st=0;for(let i=ks.length-1;i>=0;i--){if(c[ks[i]])st++;else if(i<ks.length-1)break}return`<div class="card"><div style="display:flex;justify-content:space-around;text-align:center"><div><b class="big">${mc}</b><div class="hsub">за месяц</div></div><div><b class="big">${st}</b><div class="hsub">недель подряд</div></div></div></div>`}
 let ED=null,PK=null;
 const ALT={
 cardio:["Кардио: Ходьба на дорожке","Кардио: Эллипс","Кардио: Велотренажёр","Кардио: Гребной тренажёр","Кардио: Степпер"],
@@ -292,7 +291,7 @@ function hist(){
       <div class="hc-top">
         <div>
           <div class="hdate">${ds}</div>
-          <div class="hsub">День ${L[x.day]||x.day} (${esc(x.program)}) • ${wtag} • ${ton(x)} кг</div>
+          <div class="hsub">День ${L[x.day]||x.day} (${esc(x.program)}) • ${wtag}</div>
         </div>
         <div class="h-actions">
           <button class="hbtn" onclick="toggleChart('${esc(x.exercises[0]?.name||"")}', ${i})" title="График">📈</button>
