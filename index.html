@@ -147,7 +147,7 @@ function fixDrafts(){if(S.v!==5){S.drafts={};S.v=5;save()}let ch=0;S.dts=S.dts||
 const save=()=>localStorage.setItem(K,JSON.stringify(S)); const esc=x=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 function parse(a){let o=[];for(let r of a){if(r[0].startsWith("SS")||r.length>4){let g=r[0].startsWith("SS")?r[0]:"";let st=g?1:0;for(let i=st;i<r.length;i+=4)if(r[i])o.push({group:g,name:r[i],sets:r[i+1]||1,weight:r[i+2]??0})}else o.push({group:"",name:r[0],sets:r[1]||1,weight:r[2]||0,cardio:String(r[0]).startsWith("Кардио")})}return o}
 function key(){return S.program+"|"+S.week+"|"+S.day}
-function getLastExData(name){for(let h of S.history){for(let e of h.exercises){if(e.name===name&&e.sets&&e.sets.length>0){let last=[...e.sets].reverse().find(s=>s.weight!==""||s.reps!=="");if(last)return{weight:last.weight,reps:last.reps}}}}return null}
+function getLastExData(name){for(let h of S.history){if(wkOf(h)!==S.week)continue;for(let e of h.exercises){if(e.name===name&&e.sets&&e.sets.length>0){let last=[...e.sets].reverse().find(s=>s.weight!==""||s.reps!=="");if(last)return{weight:last.weight,reps:last.reps}}}}return null}
 function draft(){let d0=S.drafts[key()];if(d0&&!d0.some(e=>e.m||e.sets.some(s=>s.done||s.reps!=="")))delete S.drafts[key()];if(!S.drafts[key()]){S.drafts[key()]=parse(P[S.program].days[S.day]).map(e=>{let last=getLastExData(e.name);let dw=last?last.weight:(e.weight||0);let dr=last?last.reps:"";return{name:e.name,group:e.group||"",cardio:!!e.cardio,sets:Array.from({length:e.sets},()=>({weight:dw,reps:dr,done:false}))}})}save();return S.drafts[key()]}
 const L={A:"А",B:"Б",V:"В",G:"Г"},R="8–12";
 const RING='<div class="ring"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg></div>';
@@ -162,7 +162,8 @@ function stopRest(){clearInterval(rt);rt=null;document.getElementById("timer").c
 function addRest(d){rend+=d*1000;tick()}
 function drawT(){let t=document.getElementById("timer");t.classList.remove("hidden");t.innerHTML=`<b>${Math.floor(rleft/60)}:${String(rleft%60).padStart(2,"0")}</b><button onclick="addRest(-15)">−15</button><button onclick="addRest(15)">+15</button><button onclick="stopRest()">✕</button>`}
 function toast(m,undo){let e=document.getElementById("toast");e.innerHTML=esc(m)+(undo?'<button id="tu">Отменить</button>':"");e.classList.remove("hidden");if(undo)document.getElementById("tu").onclick=()=>{undo();e.classList.add("hidden")};clearTimeout(tt);tt=setTimeout(()=>e.classList.add("hidden"),4500)}
-function lastEx(n){for(let h of S.history){let e=h.exercises.find(e=>e.name===n);if(e)return e}return null}
+const wkOf=h=>h.week==="light"?"light":"heavy";
+function lastEx(n){for(let h of S.history){if(wkOf(h)!==S.week)continue;let e=h.exercises.find(e=>e.name===n);if(e)return e}return null}
 function hint(n){let e=lastEx(n);if(!e)return"";let a=e.sets.filter(s=>s.reps!=="");if(!a.length)return"";let w=Math.max(...a.map(s=>+s.weight||0)),up=w>0&&a.every(s=>+s.reps>=12&&(+s.weight||0)===w);return`<div class="hint">Прошлый раз: ${esc(a.map(s=>(s.weight||0)+"×"+s.reps).join(" · "))}${up?` <b>→ попробуй ${w+2.5} кг</b>`:""}</div>`}
 const mw=e=>Math.max(0,...e.sets.map(s=>+s.weight||0)),e1=s=>{let r=+s.reps||0;return r?Math.round((+s.weight||0)*(1+r/30)):0};
 function pr(i,e){let w=mw(e);if(!w)return false;let seen=false;for(let k=i+1;k<S.history.length;k++){let o=S.history[k].exercises.find(o=>o.name===e.name);if(o){seen=true;if(mw(o)>=w)return false}}return seen}
