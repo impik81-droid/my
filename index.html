@@ -80,7 +80,13 @@ button.danger{background:#2a1418;color:#ffb6bd}
 .empty{text-align:center;color:var(--muted);padding:25px}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .cal div{min-height:48px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px;font-size:11px}
-.cal .on{background:#243409;border-color:var(--accent)}
+.cal div.on{cursor:pointer}
+.cal .on-heavy{background:#243409;border-color:var(--accent)}
+.cal .on-light{background:#33230a;border-color:#f5a623}
+.wt{font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px;letter-spacing:.5px}
+.wt.heavy{background:#243409;color:#c4f94d}
+.wt.light{background:#33230a;color:#f5a623}
+#light.active::after{background:#f5a623}
 </style></head><body><div class="app">
 <div class="top"><span class="sp"></span><select id="program"></select><button class="round" onclick="tgl()" aria-label="Аккаунт"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/></svg></button></div>
 
@@ -180,17 +186,23 @@ async function finish(){
 }
 
 function hist(){
-  let h='<div class="hh"><b>История</b><button class="danger" onclick="clearH()">Очистить</button></div>';
-  if(!S.history.length)return h+'<div class="empty">История пустая</div>';
+  let f=S.histDate||null;
+  let h='<div class="hh"><b>История</b><span style="display:flex;gap:6px">';
+  if(f){let fd=new Date(f);h+=`<button onclick="clearDate()">✕ ${fd.toLocaleDateString("ru-RU",{day:"numeric",month:"long"})}</button>`}
+  h+='<button class="danger" onclick="clearH()">Очистить</button></span></div>';
   const DC={A:"#f5a623",B:"#4f8cff",V:"#ff5d9e",G:"#8b7bff"},TR='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg>';
+  let any=false;
   S.history.forEach((x,i)=>{
+    let kd=lk(new Date(x.date));
+    if(f&&kd!==f)return;
+    any=true;
     let dt=new Date(x.date),ds=isNaN(dt)?esc(x.dateText):dt.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
-    let wName = x.week === "light" ? "Лёгкий день" : "Тяжёлый день";
+    let wtag=x.week==="light"?'<span class="wt light">ЛЁГ</span>':'<span class="wt heavy">ТЯЖ</span>';
     h+=`<div class="hc" style="--dc:${DC[x.day]||"#f5a623"}">
       <div class="hc-top">
         <div>
           <div class="hdate">${ds}</div>
-          <div class="hsub">День ${L[x.day]||x.day} (${esc(x.program)}) • <b>${wName}</b></div>
+          <div class="hsub">День ${L[x.day]||x.day} (${esc(x.program)}) • ${wtag}</div>
         </div>
         <div class="h-actions">
           <button class="hbtn" onclick="toggleChart('${esc(x.exercises[0]?.name||"")}', ${i})" title="График">📈</button>
@@ -203,8 +215,11 @@ function hist(){
     });
     h+='</div>';
   });
+  if(!any)h+=f?'<div class="empty">Нет тренировок за эту дату</div>':'<div class="empty">История пустая</div>';
   return h;
 }
+function openDate(k){S.histDate=k;S.page="history";save();render()}
+function clearDate(){S.histDate=null;save();render()}
 
 function toggleChart(exName,hi){
   let c=document.getElementById(`chart-container-${hi}`);
@@ -229,8 +244,9 @@ function toggleChart(exName,hi){
   });
   c.innerHTML=`<div class="chart-box"><div class="chart-title"><span>📊 Прогресс: ${esc(exName)}</span><span style="cursor:pointer;color:var(--muted)" onclick="document.getElementById('chart-container-${hi}').innerHTML=''">✕ закрыть</span></div><svg class="chart-svg" viewBox="0 0 ${width} ${height}"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${pts.trim()}"/>${circ}</svg></div>`;
 }
+
 async function delH(i){S.history.splice(i,1);save();await push();renderH()}async function clearH(){if(confirm("Удалить всю историю?")){S.history=[];save();await push();renderH()}}function renderH(){document.getElementById("history").innerHTML=hist()}
-function cal(){let m={};S.history.forEach(x=>m[lk(new Date(x.date))]=x.day);let d=new Date(),y=d.getFullYear(),mo=d.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate(),h='<div class="card"><b>Календарь</b></div><div class="cal">';for(let i=0;i<first;i++)h+='<div></div>';for(let i=1;i<=n;i++){let x=m[lk(new Date(y,mo,i))];h+=`<div class="${x?"on":""}"><b>${i}</b>${x?`<br>День ${L[x]||x}`:""}</div>`}return h+'</div>'}
+function cal(){let m={};S.history.forEach(x=>{let k=lk(new Date(x.date));if(!m[k])m[k]={day:x.day,week:x.week}});let d=new Date(),y=d.getFullYear(),mo=d.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate(),h='<div class="card"><b>Календарь</b><div style="display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#c4f94d;margin-right:5px"></i>Тяжёлая</span><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#f5a623;margin-right:5px"></i>Лёгкая</span></div></div><div class="cal">';for(let i=0;i<first;i++)h+='<div></div>';for(let i=1;i<=n;i++){let k=lk(new Date(y,mo,i)),x=m[k];if(x)h+=`<div class="${x.week==="light"?"on-light":"on-heavy"}" onclick="openDate('${k}')"><b>${i}</b><br>День ${L[x.day]||x.day} · ${x.week==="light"?"лёг":"тяж"}</div>`;else h+=`<div><b>${i}</b></div>`}return h+'</div>'}
 
 function renderAuth(){
   let el=document.getElementById("authp");
