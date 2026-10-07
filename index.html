@@ -81,10 +81,10 @@ button.danger{background:#2a1418;color:#ffb6bd}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .cal div{min-height:48px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px;font-size:11px}
 .cal div.on{cursor:pointer}
-.cal .on-heavy{background:#112238;border-color:#3b82f6}
+.cal .on-heavy{background:#243409;border-color:var(--accent)}
 .cal .on-light{background:#33230a;border-color:#f5a623}
 .wt{font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px;letter-spacing:.5px}
-.wt.heavy{background:#112238;color:#60a5fa}
+.wt.heavy{background:#243409;color:#c4f94d}
 .wt.light{background:#33230a;color:#f5a623}
 #light.active::after{background:#f5a623}
 .timer{position:fixed;left:16px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:6;display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--accent);border-radius:999px;padding:8px 10px 8px 18px}
@@ -225,4 +225,148 @@ function newProg(){let n=(prompt("Название новой программы
 function tgl(){showAuth=!showAuth;renderAuth()}
 function logout(){token="";userEmail="";localStorage.removeItem("wd_token");localStorage.removeItem("wd_email");showAuth=false;setStatus("Выход выполнен. Данные сохраняются локально.");renderAuth();render()}
 function lk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k];h+=`<div class="sd ${td?"today":""}"><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"></i><b>${x?(L[x]||x):"--"}</b></div>`}return h}
+function renderW(){let d=draft(),days=Object.keys(P[S.program].days),h=restBar(),last="",prev="";
+document.getElementById("dayseg").innerHTML=days.map(x=>`<button class="${x==S.day?"active":""}" onclick="day('${x}')">${L[x]||x}</button>`).join("");
+d.forEach((e,i)=>{if(e.cardio){if(prev!="c")h+='<div class="sec">Кардио</div>';h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name.replace(/^Кардио:\s*/,""))}</div><div class="sb">${esc(e.sets[0].weight)} минут</div></div></div></div>`;prev="c";return}
+if(e.group&&e.group!=last)h+=`<div class="ss">${ICO}Суперсет ${esc(e.group.replace("SS",""))}</div>`;last=e.group||"";prev="e";
+h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name)}</div><div class="sb">${e.sets.length} × ${R} повторений <em>${esc(e.sets[0].weight)} кг</em></div>${hint(e.name)}</div></div><div class="sets"><span>№</span><span>Вес, кг</span><span>Повт.</span><span>✓</span>`;
+e.sets.forEach((s,j)=>h+=`<span>${j+1}</span><input value="${esc(s.weight)}" type="number" step=".5" inputmode="decimal" onchange="up(${i},${j},'weight',this.value)"><input value="${esc(s.reps)}" type="number" inputmode="numeric" onchange="up(${i},${j},'reps',this.value)"><button class="check ${s.done?"on":""}" onclick="tg(${i},${j})">${s.done?"✓":"○"}</button>`);h+=`</div><div class="ctr"><button onclick="addSet(${i})">+ подход</button><button onclick="delSet(${i})">− подход</button><button onclick="ren(${i})">Заменить</button></div><input class="note" placeholder="Заметка" value="${esc(e.note||"")}" onchange="note(${i},this.value)"></div>`});
+h+='<button class="edbtn" onclick="openEd()">Редактировать день</button>';h+=`<button class="fab" onclick="finish()">Сохранить день ${L[S.day]||S.day}</button>`;document.getElementById("workout").innerHTML=h}
+function up(i,j,k,v){let sets=draft()[i].sets;sets[j][k]=v;if(j===0){for(let x=1;x<sets.length;x++)sets[x][k]=v}else if(j+1<sets.length&&(sets[j+1][k]===""||sets[j+1][k]==0))sets[j+1][k]=v;touch();renderW()}function tg(i,j){let s=draft()[i].sets[j];s.done=!s.done;touch();renderW();if(s.done&&!S.noauto)startRest(S.rest||90)}function day(x){S.day=x;save();render()}
+async function api(url,opt={}){opt.headers={...(opt.headers||{}),...(token?{Authorization:"Bearer "+token}:{})};let r;try{r=await fetch(url,opt)}catch(e){throw new Error("нет связи с сервером (открой сайт по адресу pages.dev)")}if(r.status===401&&token){token="";localStorage.removeItem("wd_token")}if(!r.ok){let tx="";try{tx=(await r.text()).slice(0,200)}catch(e){}let m=tx;try{m=JSON.parse(tx).error||tx}catch(e){}throw new Error("["+r.status+"] "+(m||r.statusText||"пустой ответ"))}return r.json()}
+async function sync(){if(!token)return;try{let x=await api("/api/data");if(x.data){let c=JSON.parse(x.data);S.history=merge(S.history,c.history||[]);S.body=mergeB(S.body||[],c.body||[]);S.progs={...(c.progs||{}),...(S.progs||{})};Object.assign(P,S.progs);fillProg();S.dts=S.dts||{};Object.keys(S.drafts).forEach(k=>{if(!S.dts[k]&&S.drafts[k].some(e=>e.sets.some(x=>x.done||x.reps!=="")))S.dts[k]=Date.now()});let cd=c.drafts||{},ct=c.dts||{};for(let k of new Set([...Object.keys(cd),...Object.keys(ct)]))if((ct[k]||0)>(S.dts[k]||0)){if(cd[k])S.drafts[k]=cd[k];else delete S.drafts[k];S.dts[k]=ct[k]}
+fixDrafts();save();render();await push();setStatus("Синхронизировано ☁️")}}catch(e){setStatus("Не удалось синхронизировать: "+e.message)}}
+async function push(){if(!token)return;try{let x=await api("/api/data",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:JSON.stringify({program:S.program,week:S.week,day:S.day,history:S.history,body:S.body,progs:S.progs,drafts:S.drafts,dts:S.dts})})});setStatus("Сохранено в облако ☁")}catch(e){setStatus("Ошибка облачного сохранения: "+e.message)}}
+async function register(){let em=document.getElementById("email").value, pw=document.getElementById("password").value;try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"register",email:em,password:pw})});token=r.token;userEmail=em;localStorage.setItem("wd_token",token);localStorage.setItem("wd_email",userEmail);showAuth=false;setStatus("Аккаунт создан и выполнен вход ☁️");renderAuth();await push()}catch(e){setStatus("Ошибка регистрации: "+e.message)}}
+async function login(){let em=document.getElementById("email").value, pw=document.getElementById("password").value;try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",email:em,password:pw})});token=r.token;userEmail=em;localStorage.setItem("wd_token",token);localStorage.setItem("wd_email",userEmail);showAuth=false;setStatus("Вход выполнен ☁️");renderAuth();await sync()}catch(e){setStatus("Ошибка входа: "+e.message)}}
+
+async function finish(){
+  let d = draft();
+  let now = new Date();
+  let todayKey = lk(now);
+  let exercises = d.filter(e => !e.cardio).map(e => ({
+    name: e.name,
+    group: e.group, note: e.note||"",
+    sets: e.sets.map(s => ({...s}))
+  }));
+
+  S.history = S.history.filter(x => {
+    let xDate = new Date(x.date);
+    let isToday = lk(xDate) === todayKey;
+    let isSameWorkout = x.program === S.program && x.day === S.day && x.week === S.week;
+    return !(isToday && isSameWorkout);
+  });
+
+  let entry = {
+    id: Date.now(),
+    date: now.toISOString(),
+    dateText: now.toLocaleDateString("ru-RU"),
+    program: S.program,
+    week: S.week,
+    day: S.day,
+    exercises: exercises
+  };
+  
+  S.history.unshift(entry);delete S.drafts[key()];(S.dts=S.dts||{})[key()]=Date.now();stopRest();
+
+  save();
+  await push();
+  S.page = "history";
+  render();
+  toast("Тренировка сохранена");
+}
+
+function hist(){
+  let f=S.histDate||null;
+  let h='<div class="hh"><b>История</b><span style="display:flex;gap:6px">';
+  if(f){let fd=new Date(f);h+=`<button onclick="clearDate()">✕ ${fd.toLocaleDateString("ru-RU",{day:"numeric",month:"long"})}</button>`}
+  h+='<button onclick="exp()" aria-label="Экспорт">⬇</button><button onclick="document.getElementById(\'imp\').click()" aria-label="Импорт">⬆</button><button class="danger" onclick="clearH()">Очистить</button></span></div><input id="imp" type="file" accept=".json" class="hidden" onchange="imp(this)">';
+  const DC={A:"#f5a623",B:"#4f8cff",V:"#ff5d9e",G:"#8b7bff"},TR='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg>';
+  let any=false;
+  S.history.forEach((x,i)=>{
+    let kd=lk(new Date(x.date));
+    if(f&&kd!==f)return;
+    any=true;
+    let dt=new Date(x.date),ds=isNaN(dt)?esc(x.dateText):dt.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
+    let wtag=x.week==="light"?'<span class="wt light">ЛЁГ</span>':'<span class="wt heavy">ТЯЖ</span>';
+    h+=`<div class="hc" style="--dc:${DC[x.day]||"#f5a623"}">
+      <div class="hc-top">
+        <div>
+          <div class="hdate">${ds}</div>
+          <div class="hsub">День ${L[x.day]||x.day} (${esc(x.program)}) • ${wtag}</div>
+        </div>
+        <div class="h-actions">
+          <button class="hbtn" onclick="toggleChart('${esc(x.exercises[0]?.name||"")}', ${i})" title="График">📈</button>
+          <button class="htrash" aria-label="Удалить" onclick="if(confirm('Удалить тренировку?'))delH(${i})">${TR}</button>
+        </div>
+      </div><div id="chart-container-${i}"></div>`;
+    x.exercises.forEach(e=>{
+      let s=e.sets.filter(s=>s.done||s.reps!=="").map(s=>s.weight?`${s.weight}×${s.reps||"—"}`:`×${s.reps||"—"}`).join(", ");
+      h+=`<div class="hrow"><span class="hn" onclick="toggleChart('${esc(e.name)}', ${i})" style="cursor:pointer" title="Показать график">${esc(e.name)}${pr(i,e)?` <span class="pr">🏆 1ПМ≈${Math.max(...e.sets.map(e1))}</span>`:""}${e.note?`<div class="hsub">${esc(e.note)}</div>`:""}</span><span class="hs">${s||"—"}</span></div>`;
+    });
+    h+='</div>';
+  });
+  if(!any)h+=f?'<div class="empty">Нет тренировок за эту дату</div>':'<div class="empty">История пустая</div>';
+  return h;
+}
+function openDate(k){S.histDate=k;S.page="history";save();render()}
+function clearDate(){S.histDate=null;save();render()}
+
+function toggleChart(exName,hi){
+  let c=document.getElementById(`chart-container-${hi}`);
+  if(c.innerHTML.trim()!==""){c.innerHTML="";return}
+  let points=[];
+  [...S.history].reverse().forEach(h=>{
+    let ex=h.exercises.find(e=>e.name===exName);
+    if(ex){
+      let maxW=0;
+      ex.sets.forEach(s=>{let w=parseFloat(s.weight)||0;if(w>maxW)maxW=w});
+      if(maxW>0)points.push({date:new Date(h.date).toLocaleDateString("ru-RU",{day:"numeric",month:"short"}),weight:maxW});
+    }
+  });
+  if(points.length<1){c.innerHTML=`<div class="chart-box"><div class="chart-title"><span>${esc(exName)}</span></div><div style="color:var(--muted);text-align:center;padding:10px">Мало данных для графика</div></div>`;return}
+  let maxW=Math.max(...points.map(p=>p.weight)),minW=Math.min(...points.map(p=>p.weight)),span=maxW-minW||1;
+  let width=300,height=70,pts="",circ="";
+  points.forEach((p,idx)=>{
+    let cx=points.length===1?width/2:(idx/(points.length-1))*(width-40)+20;
+    let cy=height-15-((p.weight-minW)/span)*(height-30);
+    pts+=`${cx},${cy} `;
+    circ+=`<circle cx="${cx}" cy="${cy}" r="3.5" fill="var(--accent)"/><text x="${cx}" y="${cy-8}" font-size="10" fill="#fff" text-anchor="middle">${p.weight}</text><text x="${cx}" y="${height-2}" font-size="9" fill="var(--muted)" text-anchor="middle">${p.date}</text>`;
+  });
+  c.innerHTML=`<div class="chart-box"><div class="chart-title"><span>📊 Прогресс: ${esc(exName)}</span><span style="cursor:pointer;color:var(--muted)" onclick="document.getElementById('chart-container-${hi}').innerHTML=''">✕ закрыть</span></div><svg class="chart-svg" viewBox="0 0 ${width} ${height}"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${pts.trim()}"/>${circ}</svg></div>`;
+}
+
+async function delH(i){let x=S.history.splice(i,1)[0];save();await push();renderH();toast("Тренировка удалена",async()=>{S.history=merge(S.history,[x]);save();await push();renderH()})}async function clearH(){if(confirm("Удалить всю историю?")){S.history=[];save();await push();renderH()}}function renderH(){document.getElementById("history").innerHTML=hist()}
+function cal(){let m={};S.history.forEach(x=>{let k=lk(new Date(x.date));if(!m[k])m[k]={day:x.day,week:x.week}});let n0=new Date(),d=new Date(n0.getFullYear(),n0.getMonth()+(S.co||0),1),y=d.getFullYear(),mo=d.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate(),h=stats()+'<div class="card"><div class="hh" style="margin:0"><button onclick="cmo(-1)">‹</button><b style="font-size:15px">'+d.toLocaleDateString("ru-RU",{month:"long",year:"numeric"})+'</b><button onclick="cmo(1)">›</button></div><div style="display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#c4f94d;margin-right:5px"></i>Тяжёлая</span><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#f5a623;margin-right:5px"></i>Лёгкая</span></div></div><div class="cal">';for(let i=0;i<first;i++)h+='<div></div>';for(let i=1;i<=n;i++){let k=lk(new Date(y,mo,i)),x=m[k];if(x)h+=`<div class="${x.week==="light"?"on-light":"on-heavy"}" onclick="openDate('${k}')"><b>${i}</b><br>День ${L[x.day]||x.day} · ${x.week==="light"?"лёг":"тяж"}</div>`;else h+=`<div><b>${i}</b></div>`}return h+'</div>'}
+
+function renderAuth(){
+  let el=document.getElementById("authp");
+  if(!showAuth){el.classList.add("hidden");el.innerHTML="";return;}
+  el.classList.remove("hidden");
+  if(token){
+    el.innerHTML=`<div class="user-box"><div>Аккаунт: <span>${esc(userEmail||"Авторизован")}</span></div><button class="danger" onclick="logout()">Выйти</button></div>`;
+  } else {
+    el.innerHTML=`<div class="auth"><div class="auth-row"><input id="email" placeholder="Email"><input id="password" type="password" placeholder="Пароль"></div><div class="auth-row"><button style="flex:1" onclick="register()">Регистрация</button><button style="flex:1;background:var(--accent);color:#000;font-weight:700" onclick="login()">Войти</button></div></div>`;
+  }
+}
+
+function render(){
+  if(S.page=="edit"&&!ED)S.page="workout";["workout","history","calendar","bodyp","editp"].forEach(p=>document.getElementById(p).classList.toggle("hidden",S.page!=(p=="bodyp"?"body":p=="editp"?"edit":p)));
+  document.getElementById("ctl").classList.toggle("hidden",S.page!="workout");
+  
+  nw.classList.toggle("active",S.page=="workout");
+  nh.classList.toggle("active",S.page=="history");
+  nc.classList.toggle("active",S.page=="calendar");nb.classList.toggle("active",S.page=="body");
+  
+  heavy.classList.toggle("active",S.week=="heavy");
+  light.classList.toggle("active",S.week=="light");
+  document.getElementById("wkstrip").innerHTML=strip();
+  if(S.page=="workout")renderW();
+  if(S.page=="history")renderH();
+  if(S.page=="calendar")document.getElementById("calendar").innerHTML=cal();if(S.page=="body")document.getElementById("bodyp").innerHTML=bodyPage();if(S.page=="edit")document.getElementById("editp").innerHTML=editor()
+}
+
+function setStatus(x){document.getElementById("status").textContent=x}
+program.innerHTML=Object.keys(P).map(x=>`<option>${x}</option>`).join("");program.value=S.program;program.onchange=e=>{S.program=e.target.value;S.day=Object.keys(P[S.program].days)[0];save();render()};heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="light";save();render()};nw.onclick=()=>{S.page="workout";save();render()};nh.onclick=()=>{S.page="history";save();render()};nc.onclick=()=>{S.page="calendar";save();render()};nb.onclick=()=>{S.page="body";save();render()};fixDrafts();render();if(token)sync();document.addEventListener("visibilitychange",()=>{if(!document.hidden&&token)sync()});setInterval(()=>{if(!document.hidden&&token&&!(document.activeElement&&document.activeElement.tagName=="INPUT"))sync()},20000);if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script></body></html>
