@@ -101,6 +101,9 @@ nav button{padding:10px 4px;font-size:14px}
 .bf label,.er label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 .bf input,.er input{width:100%}.er{display:flex;gap:6px;align-items:flex-end;margin-top:8px}.er label{flex:1;font-size:11px}.er input{padding:8px;text-align:center}.er button{padding:10px}
 .edbtn{width:100%;margin-top:8px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
+.sheetbg{position:fixed;inset:0;z-index:9;background:rgba(0,0,0,.6);display:flex;align-items:flex-end}
+.sh{width:100%;max-width:760px;margin:auto;background:var(--card);border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:80vh;overflow:auto}
+.alt{width:100%;text-align:left;margin-top:6px;background:var(--card2);border:1px solid var(--line)}
 </style></head><body><div class="app">
 <div class="top"><span class="sp"></span><select id="program"></select><button class="round" onclick="tgl()" aria-label="Аккаунт"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/></svg></button></div>
 
@@ -113,7 +116,7 @@ nav button{padding:10px 4px;font-size:14px}
 <div id="wkstrip" class="wkstrip"></div>
 <div id="ctl" class="ctl"><div class="seg" id="dayseg"></div><div class="seg wk"><button id="heavy">Тяж</button><button id="light">Лёг</button></div></div>
 <div id="workout"></div><div id="history" class="hidden"></div><div id="calendar" class="hidden"></div><div id="bodyp" class="hidden"></div><div id="editp" class="hidden"></div>
-</div><div id="timer" class="timer hidden"></div><div id="toast" class="toast hidden"></div>
+</div><div id="timer" class="timer hidden"></div><div id="toast" class="toast hidden"></div><div id="sheet" class="sheetbg hidden" onclick="if(event.target===this)closeSh()"></div>
 <script>
 const P={
 "Тяни–Толкай":{days:{
@@ -162,11 +165,36 @@ function exp(){let a=document.createElement("a");a.href=URL.createObjectURL(new 
 function imp(el){let f=el.files[0];if(!f)return;f.text().then(t=>{let j=JSON.parse(t);S.history=merge(S.history,j.history||[]);S.body=mergeB(S.body||[],j.body||[]);save();push();render();toast("История импортирована")}).catch(()=>toast("Не удалось прочитать файл"))}
 function addSet(i){let s=draft()[i].sets,l=s[s.length-1]||{weight:0,reps:""};s.push({weight:l.weight,reps:l.reps,done:false});save();renderW()}
 function delSet(i){let s=draft()[i].sets;if(s.length>1){s.pop();save();renderW()}}
-function ren(i){let n=prompt("Заменить упражнение на:",draft()[i].name);if(n&&n.trim()){draft()[i].name=n.trim();save();renderW()}}
+function ren(i){pick(i,"w")}
 function note(i,v){draft()[i].note=v;save()}
 function cmo(d){S.co=Math.min(0,(S.co||0)+d);save();render()}
 function stats(){let H=S.history,t=new Date(),mk=lk(t).slice(0,7),mc=H.filter(x=>lk(new Date(x.date)).startsWith(mk)).length,b={},c={};H.forEach(x=>{let k=wk(new Date(x.date));b[k]=(b[k]||0)+ton(x);c[k]=1});let ks=[];for(let i=7;i>=0;i--)ks.push(wk(new Date(t.getFullYear(),t.getMonth(),t.getDate()-7*i)));let st=0;for(let i=ks.length-1;i>=0;i--){if(c[ks[i]])st++;else if(i<ks.length-1)break}let mx=Math.max(1,...ks.map(k=>b[k]||0)),bars=ks.map((k,i)=>{let v=b[k]||0,hh=Math.round(v/mx*50);return`<rect x="${i*36+4}" y="${60-hh}" width="28" height="${hh}" rx="4" fill="var(--accent)" opacity="${v?1:.2}"/>`}).join("");return`<div class="card"><div style="display:flex;justify-content:space-around;text-align:center"><div><b class="big">${mc}</b><div class="hsub">за месяц</div></div><div><b class="big">${st}</b><div class="hsub">недель подряд</div></div><div><b class="big">${Math.round(H.reduce((a,x)=>a+ton(x),0)/1000)} т</b><div class="hsub">общий тоннаж</div></div></div><div class="hsub" style="margin:12px 0 4px">Тоннаж по неделям</div><svg viewBox="0 0 288 62" width="100%">${bars}</svg></div>`}
-let ED=null;
+let ED=null,PK=null;
+const ALT={
+cardio:["Кардио: Ходьба на дорожке","Кардио: Эллипс","Кардио: Велотренажёр","Кардио: Гребной тренажёр","Кардио: Степпер"],
+chest:["Жим лёжа со штангой","Жим лёжа в Смите","Жим в Смите 30°","Жим гантелей лёжа","Жим гантелей на наклонной скамье","Жим в тренажёре сидя","Отжимания на брусьях"],
+fly:["Бабочка","Разводка гантелей лёжа","Сведение рук в кроссовере","Сведение на блоках снизу вверх"],
+sh:["Жим гантелей сидя","Жим в Смите сидя","Жим в тренажёре на плечи","Жим Арнольда"],
+lat:["Махи с гантелями","Махи на нижнем блоке","Махи в тренажёре","Махи в наклоне на скамье"],
+rear:["Обратная бабочка","Отведение в Пек-Деке","Разводка гантелей в наклоне","Тяга канатной рукояти к лицу"],
+tri:["Разгибание рук на блоке","Разгибание рук с рукояткой","Французский жим","Разгибание рук из-за головы","Жим узким хватом в Смите","Отжимания на брусьях (трицепс)"],
+bi:["Сгибание рук со штангой","Сгибание гантелей","Скамья Скотта","Молотки с гантелями","Сгибание на нижнем блоке","Сгибание рук с гантелями на наклонной скамье под 60°"],
+row:["Горизонтальная тяга Hammer","Тяга горизонтального блока","Тяга гантели одной рукой","Тяга гантели широким хватом","Тяга Т-грифа","Тяга штанги в наклоне"],
+pull:["Тяга верхнего блока широким хватом","Тяга верхнего блока узким хватом","Тяга верхнего блока обратным хватом","Подтягивания","Подтягивания в гравитроне"],
+shr:["Шраги с гантелями","Шраги в Смите","Шраги в тренажёре","Шраги со штангой"],
+quad:["Присед в Гакке","Хак-присед","Жим ногами","Присед в Смите","Выпады с гантелями","Болгарские сплит-приседы"],
+lext:["Разгибание ног","Жим ногами узкой постановкой","Присед в Гакке","Выпады в Смите"],
+ham:["Сгибание ног лёжа","Сгибание ног сидя","Румынская тяга с гантелями","Румынская тяга в Смите","Гиперэкстензия"],
+glu:["Ягодичный мост со штангой","Ягодичный мост в Смите","Присед в гакк на ягодицу","Румынская тяга с гантелями","Отведение ноги в кроссовере","Выпады назад"],
+calf:["Икры в тренажёре","Икры в жиме ногами","Икры стоя в Смите","Икры сидя"],
+abs:["Пресс","Скручивания на блоке","Подъём ног в висе","Скручивания на римском стуле","Планка"]};
+const RULES=[[/кардио/,"cardio"],[/пресс/,"abs"],[/икр/,"calf"],[/шраг/,"shr"],[/ягодичн/,"glu"],[/разгибание ног/,"lext"],[/сгибание ног/,"ham"],[/гакк|хак|жим ногами|присед/,"quad"],[/обратная бабочка|пек|отведение/,"rear"],[/бабочка|разводк/,"fly"],[/жим гантелей сидя/,"sh"],[/французск|из-за головы|разгибание рук/,"tri"],[/жим/,"chest"],[/мах/,"lat"],[/сгибание рук|сгибание гантелей|скотт/,"bi"],[/подтяг|верхнего блока/,"pull"],[/тяга/,"row"]];
+const cat=n=>{n=n.toLowerCase();for(let [x,c] of RULES)if(x.test(n))return c;return null};
+function pick(i,m){let L0=m=="e"?ED:draft(),cur=L0[i].name,used=new Set(L0.map(e=>e.name)),list=(ALT[cat(cur)]||[]).filter(x=>x!=cur&&!used.has(x));PK={i,m,list};let el=document.getElementById("sheet");el.innerHTML=`<div class="sh"><b>Замена: ${esc(cur)}</b><div class="hsub" style="margin:4px 0 10px">${list.length?"Выберите вариант":"Готовых замен нет, введите свой вариант"}</div>${list.map((x,k)=>`<button class="alt" onclick="choose(${k})">${esc(x)}</button>`).join("")}<button class="alt" onclick="own()">Свой вариант…</button><button class="alt" onclick="closeSh()">Отмена</button></div>`;el.classList.remove("hidden")}
+function closeSh(){PK=null;document.getElementById("sheet").classList.add("hidden")}
+function choose(k){setName(PK.list[k])}
+function own(){let n=(prompt("Название упражнения:")||"").trim();if(n)setName(n);else closeSh()}
+function setName(n){let {i,m}=PK;if(m=="e")ED[i].name=n;else{let e=draft()[i],l=getLastExData(n);e.name=n;e.sets.forEach(x=>{x.weight=l?l.weight:0;x.reps=l?l.reps:"";x.done=false})}save();closeSh();render()}
 const BF=[["w","Вес, кг"],["ch","Грудь, см"],["wa","Талия, см"],["hp","Бёдра, см"],["ar","Рука, см"]];
 const mergeB=(a,b)=>{let m=new Map();[...b,...a].forEach(x=>m.set(x.d,x));return[...m.values()].sort((x,y)=>x.d<y.d?1:-1)};
 function fillProg(){program.innerHTML=Object.keys(P).map(x=>`<option>${esc(x)}</option>`).join("");program.value=S.program}
@@ -179,7 +207,7 @@ if(!B.length)h+='<div class="empty">Записей пока нет</div>';return
 function saveBody(){let t=lk(new Date()),B=S.body||[],e={...(B.find(x=>x.d===t)||{d:t})},any=false;BF.forEach(([k])=>{let v=document.getElementById("b_"+k).value;if(v!==""){e[k]=+v;any=true}else delete e[k]});if(!any)return toast("Введите хотя бы одно значение");S.body=mergeB([e],B.filter(x=>x.d!==t));save();push();render();toast("Замеры сохранены")}
 function delB(i){let x=S.body.splice(i,1)[0];save();push();render();toast("Запись удалена",()=>{S.body=mergeB(S.body,[x]);save();push();render()})}
 function openEd(){ED=parse(P[S.program].days[S.day]).map(e=>({name:e.name,sets:e.sets,weight:e.weight,g:e.group?e.group.replace("SS",""):""}));S.page="edit";render()}
-function editor(){let h=`<div class="hh"><b>${esc(S.program)} · день ${L[S.day]||S.day}</b></div>`;ED.forEach((e,i)=>{h+=`<div class="card"><input style="width:100%" value="${esc(e.name)}" placeholder="Название" onchange="ED[${i}].name=this.value"><div class="er"><label>Подходы<input type="number" inputmode="numeric" value="${esc(e.sets)}" onchange="ED[${i}].sets=this.value"></label><label>Вес / мин<input type="number" step=".5" inputmode="decimal" value="${esc(e.weight)}" onchange="ED[${i}].weight=this.value"></label><label>Суперсет<input type="number" inputmode="numeric" placeholder="нет" value="${esc(e.g)}" onchange="ED[${i}].g=this.value"></label><button onclick="edMv(${i},-1)">↑</button><button onclick="edMv(${i},1)">↓</button><button class="danger" onclick="ED.splice(${i},1);render()">✕</button></div></div>`});
+function editor(){let h=`<div class="hh"><b>${esc(S.program)} · день ${L[S.day]||S.day}</b></div>`;ED.forEach((e,i)=>{h+=`<div class="card"><input style="width:100%" value="${esc(e.name)}" placeholder="Название" onchange="ED[${i}].name=this.value"><div class="er"><label>Подходы<input type="number" inputmode="numeric" value="${esc(e.sets)}" onchange="ED[${i}].sets=this.value"></label><label>Вес / мин<input type="number" step=".5" inputmode="decimal" value="${esc(e.weight)}" onchange="ED[${i}].weight=this.value"></label><label>Суперсет<input type="number" inputmode="numeric" placeholder="нет" value="${esc(e.g)}" onchange="ED[${i}].g=this.value"></label><button onclick="pick(${i},'e')">⇄</button><button onclick="edMv(${i},-1)">↑</button><button onclick="edMv(${i},1)">↓</button><button class="danger" onclick="ED.splice(${i},1);render()">✕</button></div></div>`});
 return h+'<button class="edbtn" onclick="ED.push({name:\'\',sets:3,weight:0,g:\'\'});render()">+ Упражнение</button><button class="edbtn" onclick="addDay()">+ День</button><button class="edbtn" onclick="newProg()">+ Новая программа</button><div class="ctr" style="margin-top:14px"><button onclick="ED=null;S.page=\'workout\';render()">Отмена</button><button style="background:var(--accent);color:#000;font-weight:700" onclick="edSave()">Сохранить</button></div>'}
 function edMv(i,d){let j=i+d;if(j<0||j>=ED.length)return;[ED[i],ED[j]]=[ED[j],ED[i]];render()}
 function edCommit(){let rows=[],gm={};ED.filter(e=>String(e.name).trim()).forEach(e=>{let g=String(e.g||"").trim(),n=e.name.trim(),a=[n,+e.sets||1,+e.weight||0];if(g&&!n.startsWith("Кардио")){let k="SS"+g;if(gm[k])gm[k].push(";",...a);else{gm[k]=[k,...a];rows.push(gm[k])}}else rows.push([...a,""])});P[S.program].days[S.day]=rows;S.progs=S.progs||{};S.progs[S.program]={days:P[S.program].days};Object.keys(S.drafts).forEach(k=>{if(k.startsWith(S.program+"|")&&k.endsWith("|"+S.day))delete S.drafts[k]});save();push()}
