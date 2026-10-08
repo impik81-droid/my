@@ -213,7 +213,7 @@ function newProg(){let n=(prompt("Название новой программы
 function tgl(){showAuth=!showAuth;renderAuth()}
 function logout(){token="";userEmail="";localStorage.removeItem("wd_token");localStorage.removeItem("wd_email");showAuth=false;setStatus("Выход выполнен. Данные сохраняются локально.");renderAuth();render()}
 function lk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k];h+=`<div class="sd ${td?"today":""}"><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"><b>${x?(L[x]||x):"--"}</b></div>`}return h}
+function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k];h+=`<div class="sd ${td?"today":""}"><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"></i><b>${x?(L[x]||x):"--"}</b></div>`}return h}
 function renderW(){let d=draft(),days=Object.keys(P[S.program].days),h=dn(),last="",prev="";
 document.getElementById("dayseg").innerHTML=days.map(x=>`<button class="${x==S.day?"active":""}" onclick="day('${x}')">${L[x]||x}</button>`).join("");
 d.forEach((e,i)=>{if(e.cardio){if(prev!="c")h+='<div class="sec">Кардио</div>';h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name.replace(/^Кардио:\s*/,""))}</div><div class="sb">${esc(e.sets[0].weight)} минут</div></div></div></div>`;prev="c";return}
@@ -330,7 +330,6 @@ function getExercisesForDay(dayKey) {
   let days = P[S.program].days;
   if (!days || !days[dayKey]) return [];
   let parsed = parse(days[dayKey]);
-  // убираем дубликаты и кардио
   let list = [];
   parsed.forEach(e => {
     if (!e.cardio && !list.includes(e.name)) list.push(e.name);
@@ -347,7 +346,6 @@ function progPage() {
   let namesMap = P[S.program].names || {};
   let h = `<div class="sec" style="margin-top:0">Прогресс</div>`;
   
-  // Кнопки дней
   h += `<div class="card" style="padding:10px"><div class="hsub" style="margin-bottom:8px">Программа</div><div style="display:flex;gap:6px;flex-wrap:wrap">`;
   days.forEach(d => {
     let title = namesMap[d] ? `День ${L[d]||d} (${namesMap[d]})` : `День ${L[d]||d}`;
@@ -359,14 +357,12 @@ function progPage() {
     return h + `<div class="empty">В этот день нет силовых упражнений</div>`;
   }
 
-  // Селектор упражнений
   h += `<div class="card" style="padding:10px"><select style="width:100%;font-weight:600" onchange="S.progEx=this.value;render()">`;
   exercises.forEach(ex => {
     h += `<option ${ex===S.progEx?'selected':''}>${esc(ex)}</option>`;
   });
   h += `</select></div>`;
 
-  // Собираем данные по выбранному упражнению из истории
   let points = [];
   [...S.history].reverse().forEach(hItem => {
     let ex = hItem.exercises.find(e => e.name === S.progEx);
@@ -391,7 +387,6 @@ function progPage() {
   let diff = +(curW - firstW).toFixed(1);
   let diffStr = (diff > 0 ? "+" : "") + diff + " кг";
 
-  // Рендер графика SVG
   let maxW = Math.max(...points.map(p => p.weight)), minW = Math.min(...points.map(p => p.weight)), span = maxW - minW || 1;
   let width = 300, height = 130, pts = "", circ = "", axisLabels = "";
   
@@ -405,7 +400,6 @@ function progPage() {
     }
   });
 
-  // Горизонтальные линии сетки
   let gridLines = "";
   for (let i = 0; i <= 3; i++) {
     let val = Math.round(minW + (span / 3) * i);
@@ -415,7 +409,6 @@ function progPage() {
 
   h += `<div class="card"><div class="chart-title"><span><span style="display:inline-block;width:10px;height:10px;background:var(--accent);border-radius:50%;margin-right:6px"></span>Лучший вес, кг</span></div><svg class="chart-svg" viewBox="0 0 ${width} ${height}">${gridLines}<polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="${pts.trim()}"/>${circ}${axisLabels}</svg></div>`;
 
-  // Плашки снизу
   h += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
     <div class="card" style="text-align:center;padding:12px 6px;margin:0"><b style="font-size:18px;color:var(--accent)">${curW} кг</b><div class="hsub" style="margin-top:2px">Текущий рабочий</div></div>
     <div class="card" style="text-align:center;padding:12px 6px;margin:0"><b style="font-size:18px">${diffStr}</b><div class="hsub" style="margin-top:2px">С первой записи</div></div>
