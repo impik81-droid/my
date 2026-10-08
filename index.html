@@ -23,4 +23,10 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 #program{flex:1;min-width:0;appearance:none;-webkit-appearance:none;background:none;border:0;text-align:center;text-align-last:center;text-transform:uppercase;font:800 16px var(--h);letter-spacing:.2px}
 .auth{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px}
 .auth-row{display:flex;gap:7px;flex-wrap:wrap}.auth-row input{flex:1;min-width:130px}
-.user-box{display:flex;align-items
+.user-box{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 14px;margin-bottom:12px;font-size:14px}
+.user-box span{color:var(--accent);font-weight:600}
+.status{font-size:12px;color:var(--muted);margin:0 0 12px}
+
+/* Закрепленная нижняя навигация с иконками */
+nav{position:fixed;bottom:0;left:0;right:0;z-index:10;background:rgba(18,18,20,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom));display:flex;justify-content:space-around;max-width:760px;margin:auto}
+nav button{flex:1;background:none;border:0;border-radius:0;padding:4px 0;font-size:11px;color:var(--muted);display
