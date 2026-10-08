@@ -12,7 +12,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:16px -apple-system,Bli
 .app{max-width:760px;margin:auto;padding:calc(14px + env(safe-area-inset-top)) 16px calc(120px + env(safe-area-inset-bottom))}
 button{font:inherit;border:0;color:var(--text);background:var(--card2);border-radius:12px;padding:10px 13px}
 input,select{font:inherit;color:var(--text)}
-input{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px}
+input,select{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px}
 .hidden{display:none!important}
 select option{background:#1b1b1e;color:#fff}
 button,select{-webkit-tap-highlight-color:transparent;outline:0}
@@ -45,7 +45,6 @@ nav{display:flex;gap:8px;margin-bottom:16px}nav button{flex:1;background:var(--c
 .sec,.ss{font:800 17px var(--h);text-transform:uppercase}
 .sec{margin:6px 0 16px}
 .ss{display:flex;align-items:center;gap:12px;margin:24px 0 16px;padding-top:24px;border-top:1px solid var(--line)}
-.sec+.ss{border-top:0;padding-top:0;margin-top:30px}
 .ss svg{color:var(--accent);flex:none}
 .row{display:flex;align-items:center;gap:16px}
 .ring{flex:none;width:64px;height:64px;border-radius:50%;border:3px solid #2c2c31;background:#ececef;color:#111;display:grid;place-items:center}
@@ -73,9 +72,9 @@ nav{display:flex;gap:8px;margin-bottom:16px}nav button{flex:1;background:var(--c
 
 .h-actions{display:flex;gap:4px}
 .hbtn{background:var(--card2);color:var(--muted);padding:4px 8px;font-size:11px;border-radius:6px;border:1px solid var(--line)}
-.chart-box{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;font-size:12px}
-.chart-title{font-weight:700;color:var(--accent);margin-bottom:6px;display:flex;justify-content:space-between}
-.chart-svg{width:100%;height:80px;overflow:visible}
+.chart-box{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px;margin:8px 0;font-size:12px}
+.chart-title{font-weight:700;color:var(--accent);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.chart-svg{width:100%;height:140px;overflow:visible}
 button.danger{background:#2a1418;color:#ffb6bd}
 .empty{text-align:center;color:var(--muted);padding:25px}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
@@ -97,9 +96,7 @@ button.danger{background:#2a1418;color:#ffb6bd}
 .pr{font-size:10px;font-weight:800;color:#000;background:var(--accent);border-radius:6px;padding:1px 6px;white-space:nowrap}
 .big{font:800 22px var(--h);display:block}
 nav button{padding:10px 4px;font-size:14px}
-.bf{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.bf label,.er label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
-.bf input,.er input{width:100%}.er{display:flex;gap:6px;align-items:flex-end;margin-top:8px}.er label{flex:1;font-size:11px}.er input{padding:8px;text-align:center}.er button{padding:10px}
+.er{display:flex;gap:6px;align-items:flex-end;margin-top:8px}.er label{flex:1;font-size:11px}.er input{padding:8px;text-align:center}.er button{padding:10px}
 .edbtn{width:100%;margin-top:8px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
 .sheetbg{position:fixed;inset:0;z-index:9;background:rgba(0,0,0,.6);display:flex;align-items:flex-end}
 .sh{width:100%;max-width:760px;margin:auto;background:var(--card);border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:80vh;overflow:auto}
@@ -111,11 +108,11 @@ nav button{padding:10px 4px;font-size:14px}
 <div id="status" class="status" onclick="sync()" style="cursor:pointer">Данные сохраняются локально. Для синхронизации войди в аккаунт.</div>
 
 <!-- Навигация сверху -->
-<nav><button id="nw" class="active">Тренировка</button><button id="nh">История</button><button id="nc">Календарь</button><button id="nb">Тело</button></nav>
+<nav><button id="nw" class="active">Тренировка</button><button id="nh">История</button><button id="np">Прогресс</button><button id="nc">Календарь</button></nav>
 
 <div id="wkstrip" class="wkstrip"></div>
 <div id="ctl" class="ctl"><div class="seg" id="dayseg"></div><div class="seg wk"><button id="heavy">Тяж</button><button id="light">Лёг</button></div></div>
-<div id="workout"></div><div id="history" class="hidden"></div><div id="calendar" class="hidden"></div><div id="bodyp" class="hidden"></div><div id="editp" class="hidden"></div>
+<div id="workout"></div><div id="history" class="hidden"></div><div id="progp" class="hidden"></div><div id="calendar" class="hidden"></div><div id="editp" class="hidden"></div>
 </div><div id="toast" class="toast hidden"></div><div id="sheet" class="sheetbg hidden" onclick="if(event.target===this)closeSh()"></div>
 <script>
 const P={
@@ -165,10 +162,10 @@ function hint(n){let e=lastEx(n);if(!e)return"";let a=e.sets.filter(s=>s.reps!==
 const mw=e=>Math.max(0,...e.sets.map(s=>+s.weight||0)),e1=s=>{let r=+s.reps||0;return r?Math.round((+s.weight||0)*(1+r/30)):0};
 function pr(i,e){let w=mw(e);if(!w)return false;let seen=false;for(let k=i+1;k<S.history.length;k++){let o=S.history[k].exercises.find(o=>o.name===e.name);if(o){seen=true;if(mw(o)>=w)return false}}return seen}
 const wk=d=>lk(new Date(d.getFullYear(),d.getMonth(),d.getDate()-((d.getDay()+6)%7)));
-const hk=x=>"h:"+(x.id||x.date),bk=x=>"b:"+x.d;
+const hk=x=>"h:"+(x.id||x.date);
 function merge(a,b){let m=new Map(),D=S.del||{};[...b,...a].forEach(x=>{if(!D[hk(x)])m.set(x.id||x.date,x)});return[...m.values()].sort((x,y)=>new Date(y.date)-new Date(x.date))}
-function exp(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({history:S.history,body:S.body})],{type:"application/json"}));a.download="workout-"+lk(new Date())+".json";a.click()}
-function imp(el){let f=el.files[0];if(!f)return;f.text().then(t=>{let j=JSON.parse(t);let jh=(j.history||[]).map((x,i)=>S.del&&S.del[hk(x)]?{...x,id:Date.now()+i}:x);S.history=merge(S.history,jh);S.body=mergeB(S.body||[],(j.body||[]).map(x=>({...x,u:Date.now()})));save();push();render();toast("История импортирована")}).catch(()=>toast("Не удалось прочитать файл"))}
+function exp(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({history:S.history})],{type:"application/json"}));a.download="workout-"+lk(new Date())+".json";a.click()}
+function imp(el){let f=el.files[0];if(!f)return;f.text().then(t=>{let j=JSON.parse(t);let jh=(j.history||[]).map((x,i)=>S.del&&S.del[hk(x)]?{...x,id:Date.now()+i}:x);S.history=merge(S.history,jh);save();push();render();toast("История импортирована")}).catch(()=>toast("Не удалось прочитать файл"))}
 function addSet(i){draft()[i].m=1;let s=draft()[i].sets,l=s[s.length-1]||{weight:0,reps:""};s.push({weight:l.weight,reps:l.reps,done:false});touch();renderW()}
 function delSet(i){draft()[i].m=1;let s=draft()[i].sets;if(s.length>1){s.pop();touch();renderW()}}
 function ren(i){pick(i,"w")}
@@ -203,17 +200,8 @@ function closeSh(){PK=null;document.getElementById("sheet").classList.add("hidde
 function choose(k){setName(PK.list[k])}
 function own(){let n=(prompt("Название упражнения:")||"").trim();if(n)setName(n);else closeSh()}
 function setName(n){let {i,m}=PK;if(m=="e")ED[i].name=n;else{let e=draft()[i],l=getLastExData(n);e.name=n;e.m=1;e.sets.forEach(x=>{x.weight=l?l.weight:0;x.reps=l?l.reps:"";x.done=false})}touch();closeSh();render()}
-const BF=[["w","Вес, кг"],["ch","Грудь, см"],["wa","Талия, см"],["hp","Бёдра, см"],["ar","Рука, см"]];
-const mergeB=(a,b)=>{let m=new Map(),D=S.del||{};[...b,...a].forEach(x=>{let t=D[bk(x)];if(t&&(x.u||0)<=t)return;let o=m.get(x.d);if(!o||(x.u||0)>=(o.u||0))m.set(x.d,x)});return[...m.values()].sort((x,y)=>x.d<y.d?1:-1)};
 function fillProg(){program.innerHTML=Object.keys(P).map(x=>`<option>${esc(x)}</option>`).join("");program.value=S.program}
-function lc(p){if(p.length<2)return'<div class="hsub" style="padding:10px 0">Для графика нужно минимум две записи</div>';let mx=Math.max(...p.map(x=>x.v)),mn=Math.min(...p.map(x=>x.v)),sp=mx-mn||1,W=300,H=80,q=p.map((x,i)=>[i/(p.length-1)*(W-40)+20,H-25-(x.v-mn)/sp*(H-45)]);return`<svg viewBox="0 0 ${W} ${H}" width="100%"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${q.map(a=>a.join(",")).join(" ")}"/>${q.map((a,i)=>`<circle cx="${a[0]}" cy="${a[1]}" r="3" fill="var(--accent)"/>`+((i==0||i==q.length-1)?`<text x="${a[0]}" y="${a[1]-8}" font-size="10" fill="#fff" text-anchor="middle">${p[i].v}</text>`:"")).join("")}</svg>`}
-function bodyPage(){let B=S.body||[],t=lk(new Date()),td=B.find(x=>x.d===t)||{},m=S.bm||"w",ml=BF.find(f=>f[0]==m)[1],pts=[...B].reverse().filter(x=>x[m]).slice(-20).map(x=>({v:+x[m]}));
-let h='<div class="card"><b>Сегодня</b><div class="bf">'+BF.map(([k,l])=>`<label>${l}<input id="b_${k}" type="number" step=".1" inputmode="decimal" value="${td[k]??""}"></label>`).join("")+'</div><button style="width:100%;margin-top:10px;background:var(--accent);color:#000;font-weight:700" onclick="saveBody()">Сохранить</button></div>';
-h+='<div class="card"><div class="seg" style="flex-wrap:wrap">'+BF.map(([k,l])=>`<button class="${k==m?"active":""}" style="font:600 13px -apple-system,sans-serif;padding:8px" onclick="S.bm=\'${k}\';save();render()">${l.split(",")[0]}</button>`).join("")+`</div><div class="hsub" style="margin:10px 0 4px">${ml}</div>${lc(pts)}</div>`;
-B.forEach((x,i)=>{h+=`<div class="hc"><div class="hc-top"><div><div class="hdate">${new Date(x.d+"T12:00").toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"})}</div><div class="hsub">${BF.filter(f=>x[f[0]]).map(f=>f[1].split(",")[0]+" "+x[f[0]]).join(" • ")}</div></div><button class="htrash" onclick="delB(${i})" aria-label="Удалить">✕</button></div></div>`});
-if(!B.length)h+='<div class="empty">Записей пока нет</div>';return h}
-function saveBody(){let t=lk(new Date()),B=S.body||[],e={...(B.find(x=>x.d===t)||{d:t})},any=false;BF.forEach(([k])=>{let v=document.getElementById("b_"+k).value;if(v!==""){e[k]=+v;any=true}else delete e[k]});if(!any)return toast("Введите хотя бы одно значение");e.u=Date.now();S.body=mergeB([e],B.filter(x=>x.d!==t));save();push();render();toast("Замеры сохранены")}
-function delB(i){let x=S.body.splice(i,1)[0];(S.del=S.del||{})[bk(x)]=Date.now();save();push();render();toast("Запись удалена",()=>{x.u=Date.now();S.body=mergeB(S.body,[x]);save();push();render()})}
+
 function openEd(){ED=parse(P[S.program].days[S.day]).map(e=>({name:e.name,sets:e.sets,weight:e.weight,g:e.group?e.group.replace("SS",""):""}));S.page="edit";render()}
 function editor(){let h=`<div class="hh"><b>${esc(S.program)} · день ${L[S.day]||S.day}</b></div>`;ED.forEach((e,i)=>{h+=`<div class="card"><input style="width:100%" value="${esc(e.name)}" placeholder="Название" onchange="ED[${i}].name=this.value"><div class="er"><label>Подходы<input type="number" inputmode="numeric" value="${esc(e.sets)}" onchange="ED[${i}].sets=this.value"></label><label>Вес / мин<input type="number" step=".5" inputmode="decimal" value="${esc(e.weight)}" onchange="ED[${i}].weight=this.value"></label><label>Суперсет<input type="number" inputmode="numeric" placeholder="нет" value="${esc(e.g)}" onchange="ED[${i}].g=this.value"></label><button onclick="pick(${i},'e')">⇄</button><button onclick="edMv(${i},-1)">↑</button><button onclick="edMv(${i},1)">↓</button><button class="danger" onclick="ED.splice(${i},1);render()">✕</button></div></div>`});
 return h+'<button class="edbtn" onclick="ED.push({name:\'\',sets:3,weight:0,g:\'\'});render()">+ Упражнение</button><button class="edbtn" onclick="addDay()">+ День</button><button class="edbtn" onclick="newProg()">+ Новая программа</button><div class="ctr" style="margin-top:14px"><button onclick="ED=null;S.page=\'workout\';render()">Отмена</button><button style="background:var(--accent);color:#000;font-weight:700" onclick="edSave()">Сохранить</button></div>'}
@@ -225,7 +213,7 @@ function newProg(){let n=(prompt("Название новой программы
 function tgl(){showAuth=!showAuth;renderAuth()}
 function logout(){token="";userEmail="";localStorage.removeItem("wd_token");localStorage.removeItem("wd_email");showAuth=false;setStatus("Выход выполнен. Данные сохраняются локально.");renderAuth();render()}
 function lk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k];h+=`<div class="sd ${td?"today":""}"><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"></i><b>${x?(L[x]||x):"--"}</b></div>`}return h}
+function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k];h+=`<div class="sd ${td?"today":""}"><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"><b>${x?(L[x]||x):"--"}</b></div>`}return h}
 function renderW(){let d=draft(),days=Object.keys(P[S.program].days),h=dn(),last="",prev="";
 document.getElementById("dayseg").innerHTML=days.map(x=>`<button class="${x==S.day?"active":""}" onclick="day('${x}')">${L[x]||x}</button>`).join("");
 d.forEach((e,i)=>{if(e.cardio){if(prev!="c")h+='<div class="sec">Кардио</div>';h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name.replace(/^Кардио:\s*/,""))}</div><div class="sb">${esc(e.sets[0].weight)} минут</div></div></div></div>`;prev="c";return}
@@ -235,9 +223,9 @@ e.sets.forEach((s,j)=>h+=`<span>${P[S.program].warm?(j?j:"Р"):j+1}</span><input
 h+='<button class="edbtn" onclick="openEd()">Редактировать день</button>';h+=`<button class="fab" onclick="finish()">Сохранить день ${L[S.day]||S.day}</button>`;document.getElementById("workout").innerHTML=h}
 function up(i,j,k,v){let E=draft()[i],sets=E.sets;E.m=1;sets[j][k]=v;if(j===0){for(let x=1;x<sets.length;x++)sets[x][k]=v}else if(j+1<sets.length&&(sets[j+1][k]===""||sets[j+1][k]==0))sets[j+1][k]=v;touch();renderW()}function tg(i,j){let s=draft()[i].sets[j];s.done=!s.done;touch();renderW()}function day(x){S.day=x;save();render()}
 async function api(url,opt={}){opt.headers={...(opt.headers||{}),...(token?{Authorization:"Bearer "+token}:{})};let r;try{r=await fetch(url,opt)}catch(e){throw new Error("нет связи с сервером (открой сайт по адресу pages.dev)")}if(r.status===401&&token){token="";localStorage.removeItem("wd_token")}if(!r.ok){let tx="";try{tx=(await r.text()).slice(0,200)}catch(e){}let m=tx;try{m=JSON.parse(tx).error||tx}catch(e){}throw new Error("["+r.status+"] "+(m||r.statusText||"пустой ответ"))}return r.json()}
-async function sync(){if(!token)return;try{let x=await api("/api/data");if(x.data){let c=JSON.parse(x.data);S.del=S.del||{};let cdl=c.del||{};for(let k in cdl)S.del[k]=Math.max(S.del[k]||0,cdl[k]);let lim=Date.now()-180*864e5;for(let k in S.del)if(S.del[k]<lim)delete S.del[k];S.history=merge(S.history,c.history||[]);S.body=mergeB(S.body||[],c.body||[]);S.progs={...(c.progs||{}),...(S.progs||{})};Object.assign(P,S.progs);fillProg();fixDrafts();S.dts=S.dts||{};Object.keys(S.drafts).forEach(k=>{if(!S.dts[k]&&S.drafts[k].some(e=>e.sets.some(x=>x.done||x.reps!=="")))S.dts[k]=Date.now()});let cd=c.drafts||{},ct=c.dts||{};for(let k of new Set([...Object.keys(cd),...Object.keys(ct)]))if((ct[k]||0)>(S.dts[k]||0)){if(cd[k])S.drafts[k]=cd[k];else delete S.drafts[k];S.dts[k]=ct[k]}
+async function sync(){if(!token)return;try{let x=await api("/api/data");if(x.data){let c=JSON.parse(x.data);S.del=S.del||{};let cdl=c.del||{};for(let k in cdl)S.del[k]=Math.max(S.del[k]||0,cdl[k]);let lim=Date.now()-180*864e5;for(let k in S.del)if(S.del[k]<lim)delete S.del[k];S.history=merge(S.history,c.history||[]);S.progs={...(c.progs||{}),...(S.progs||{})};Object.assign(P,S.progs);fillProg();fixDrafts();S.dts=S.dts||{};Object.keys(S.drafts).forEach(k=>{if(!S.dts[k]&&S.drafts[k].some(e=>e.sets.some(x=>x.done||x.reps!=="")))S.dts[k]=Date.now()});let cd=c.drafts||{},ct=c.dts||{};for(let k of new Set([...Object.keys(cd),...Object.keys(ct)]))if((ct[k]||0)>(S.dts[k]||0)){if(cd[k])S.drafts[k]=cd[k];else delete S.drafts[k];S.dts[k]=ct[k]}
 fixDrafts();save();render();await push();let l=S.history[0];setStatus("Синхронизировано ☁️ Тренировок: "+S.history.length+" (в облаке было "+(c.history||[]).length+")"+(l?". Последняя: "+new Date(l.date).toLocaleDateString("ru-RU",{day:"numeric",month:"short"})+", день "+(L[l.day]||l.day):"")+". Нажми, чтобы обновить.")}}catch(e){setStatus("Не удалось синхронизировать: "+e.message)}}
-async function push(){if(!token)return;try{let x=await api("/api/data",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:JSON.stringify({program:S.program,week:S.week,day:S.day,history:S.history,body:S.body,progs:S.progs,drafts:S.drafts,dts:S.dts,del:S.del})})});setStatus("Сохранено в облако ☁")}catch(e){setStatus("Ошибка облачного сохранения: "+e.message)}}
+async function push(){if(!token)return;try{let x=await api("/api/data",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:JSON.stringify({program:S.program,week:S.week,day:S.day,history:S.history,progs:S.progs,drafts:S.drafts,dts:S.dts,del:S.del})})});setStatus("Сохранено в облако ☁")}catch(e){setStatus("Ошибка облачного сохранения: "+e.message)}}
 async function register(){let em=document.getElementById("email").value, pw=document.getElementById("password").value;try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"register",email:em,password:pw})});token=r.token;userEmail=em;localStorage.setItem("wd_token",token);localStorage.setItem("wd_email",userEmail);showAuth=false;setStatus("Аккаунт создан и выполнен вход ☁️");renderAuth();await push()}catch(e){setStatus("Ошибка регистрации: "+e.message)}}
 async function login(){let em=document.getElementById("email").value, pw=document.getElementById("password").value;try{let r=await api("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",email:em,password:pw})});token=r.token;userEmail=em;localStorage.setItem("wd_token",token);localStorage.setItem("wd_email",userEmail);showAuth=false;setStatus("Вход выполнен ☁️");renderAuth();await sync()}catch(e){setStatus("Ошибка входа: "+e.message)}}
 
@@ -337,6 +325,106 @@ function toggleChart(exName,hi){
   c.innerHTML=`<div class="chart-box"><div class="chart-title"><span>📊 Прогресс: ${esc(exName)}</span><span style="cursor:pointer;color:var(--muted)" onclick="document.getElementById('chart-container-${hi}').innerHTML=''">✕ закрыть</span></div><svg class="chart-svg" viewBox="0 0 ${width} ${height}"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${pts.trim()}"/>${circ}</svg></div>`;
 }
 
+// Логика вкладки Прогресс
+function getExercisesForDay(dayKey) {
+  let days = P[S.program].days;
+  if (!days || !days[dayKey]) return [];
+  let parsed = parse(days[dayKey]);
+  // убираем дубликаты и кардио
+  let list = [];
+  parsed.forEach(e => {
+    if (!e.cardio && !list.includes(e.name)) list.push(e.name);
+  });
+  return list;
+}
+
+function progPage() {
+  let days = Object.keys(P[S.program].days);
+  if (!S.progDay || !days.includes(S.progDay)) S.progDay = days[0];
+  let exercises = getExercisesForDay(S.progDay);
+  if (!S.progEx || !exercises.includes(S.progEx)) S.progEx = exercises[0] || "";
+
+  let namesMap = P[S.program].names || {};
+  let h = `<div class="sec" style="margin-top:0">Прогресс</div>`;
+  
+  // Кнопки дней
+  h += `<div class="card" style="padding:10px"><div class="hsub" style="margin-bottom:8px">Программа</div><div style="display:flex;gap:6px;flex-wrap:wrap">`;
+  days.forEach(d => {
+    let title = namesMap[d] ? `День ${L[d]||d} (${namesMap[d]})` : `День ${L[d]||d}`;
+    h += `<button style="flex:1;min-width:130px;padding:10px;font-size:13px;background:${d===S.progDay?'var(--accent)':'var(--card2)'};color:${d===S.progDay?'#000':'var(--text)'};font-weight:${d===S.progDay?'700':'500'}" onclick="S.progDay='${d}';S.progEx='';render()">${esc(title)}</button>`;
+  });
+  h += `</div></div>`;
+
+  if (!exercises.length) {
+    return h + `<div class="empty">В этот день нет силовых упражнений</div>`;
+  }
+
+  // Селектор упражнений
+  h += `<div class="card" style="padding:10px"><select style="width:100%;font-weight:600" onchange="S.progEx=this.value;render()">`;
+  exercises.forEach(ex => {
+    h += `<option ${ex===S.progEx?'selected':''}>${esc(ex)}</option>`;
+  });
+  h += `</select></div>`;
+
+  // Собираем данные по выбранному упражнению из истории
+  let points = [];
+  [...S.history].reverse().forEach(hItem => {
+    let ex = hItem.exercises.find(e => e.name === S.progEx);
+    if (ex) {
+      let maxW = 0;
+      ex.sets.forEach(s => { let w = parseFloat(s.weight)||0; if (w > maxW) maxW = w; });
+      if (maxW > 0) {
+        let dt = new Date(hItem.date);
+        let dateStr = isNaN(dt) ? hItem.dateText : dt.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
+        let shortDate = isNaN(dt) ? hItem.dateText : dt.toLocaleDateString("ru-RU",{day:"numeric",month:"short"});
+        points.push({ dateStr, shortDate, weight: maxW, rawDate: dt });
+      }
+    }
+  });
+
+  if (points.length === 0) {
+    return h + `<div class="empty">По этому упражнению пока нет записей в истории</div>`;
+  }
+
+  let curW = points[points.length - 1].weight;
+  let firstW = points[0].weight;
+  let diff = +(curW - firstW).toFixed(1);
+  let diffStr = (diff > 0 ? "+" : "") + diff + " кг";
+
+  // Рендер графика SVG
+  let maxW = Math.max(...points.map(p => p.weight)), minW = Math.min(...points.map(p => p.weight)), span = maxW - minW || 1;
+  let width = 300, height = 130, pts = "", circ = "", axisLabels = "";
+  
+  points.forEach((p, idx) => {
+    let cx = points.length === 1 ? width / 2 : (idx / (points.length - 1)) * (width - 50) + 30;
+    let cy = height - 25 - ((p.weight - minW) / span) * (height - 50);
+    pts += `${cx},${cy} `;
+    circ += `<circle cx="${cx}" cy="${cy}" r="4" fill="var(--accent)"/><text x="${cx}" y="${cy-9}" font-size="10" fill="#fff" font-weight="700" text-anchor="middle">${p.weight}</text>`;
+    if (points.length <= 4 || idx === 0 || idx === points.length - 1 || idx === Math.floor(points.length / 2)) {
+      axisLabels += `<text x="${cx}" y="${height - 6}" font-size="9" fill="var(--muted)" text-anchor="middle">${p.shortDate}</text>`;
+    }
+  });
+
+  // Горизонтальные линии сетки
+  let gridLines = "";
+  for (let i = 0; i <= 3; i++) {
+    let val = Math.round(minW + (span / 3) * i);
+    let gy = height - 25 - (i / 3) * (height - 50);
+    gridLines += `<line x1="30" y1="${gy}" x2="${width - 10}" y2="${gy}" stroke="var(--line)" stroke-dasharray="3,3"/><text x="25" y="${gy+3}" font-size="9" fill="var(--muted)" text-anchor="end">${val}</text>`;
+  }
+
+  h += `<div class="card"><div class="chart-title"><span><span style="display:inline-block;width:10px;height:10px;background:var(--accent);border-radius:50%;margin-right:6px"></span>Лучший вес, кг</span></div><svg class="chart-svg" viewBox="0 0 ${width} ${height}">${gridLines}<polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="${pts.trim()}"/>${circ}${axisLabels}</svg></div>`;
+
+  // Плашки снизу
+  h += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+    <div class="card" style="text-align:center;padding:12px 6px;margin:0"><b style="font-size:18px;color:var(--accent)">${curW} кг</b><div class="hsub" style="margin-top:2px">Текущий рабочий</div></div>
+    <div class="card" style="text-align:center;padding:12px 6px;margin:0"><b style="font-size:18px">${diffStr}</b><div class="hsub" style="margin-top:2px">С первой записи</div></div>
+    <div class="card" style="text-align:center;padding:12px 6px;margin:0"><b style="font-size:18px">${points.length}</b><div class="hsub" style="margin-top:2px">Тренировок с данными</div></div>
+  </div>`;
+
+  return h;
+}
+
 async function delH(i){let x=S.history.splice(i,1)[0];(S.del=S.del||{})[hk(x)]=Date.now();save();await push();renderH();toast("Тренировка удалена",async()=>{x.id=Date.now();S.history=merge(S.history,[x]);save();await push();renderH()})}async function clearH(){if(confirm("Удалить всю историю?")){S.del=S.del||{};S.history.forEach(x=>S.del[hk(x)]=Date.now());S.history=[];save();await push();renderH()}}function renderH(){document.getElementById("history").innerHTML=hist()}
 function cal(){let m={};S.history.forEach(x=>{let k=lk(new Date(x.date));if(!m[k])m[k]={day:x.day,week:x.week,fx:!!(P[x.program]||{}).noWeek}});let n0=new Date(),d=new Date(n0.getFullYear(),n0.getMonth()+(S.co||0),1),y=d.getFullYear(),mo=d.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate(),h=stats()+'<div class="card"><div class="hh" style="margin:0"><button onclick="cmo(-1)">‹</button><b style="font-size:15px">'+d.toLocaleDateString("ru-RU",{month:"long",year:"numeric"})+'</b><button onclick="cmo(1)">›</button></div><div style="display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#4da3ff;margin-right:5px"></i>Тяжёлая</span><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#f5a623;margin-right:5px"></i>Лёгкая</span></div></div><div class="cal">';for(let i=0;i<first;i++)h+='<div></div>';for(let i=1;i<=n;i++){let k=lk(new Date(y,mo,i)),x=m[k];if(x)h+=`<div class="${x.fx?"on-fixed":x.week==="light"?"on-light":"on-heavy"}" onclick="openDate('${k}')"><b>${i}</b><br>День ${L[x.day]||x.day}${x.fx?"":" · "+(x.week==="light"?"лёг":"тяж")}</div>`;else h+=`<div><b>${i}</b></div>`}return h+'</div>'}
 
@@ -352,21 +440,24 @@ function renderAuth(){
 }
 
 function render(){
-  if(S.page=="edit"&&!ED)S.page="workout";["workout","history","calendar","bodyp","editp"].forEach(p=>document.getElementById(p).classList.toggle("hidden",S.page!=(p=="bodyp"?"body":p=="editp"?"edit":p)));
+  if(S.page=="edit"&&!ED)S.page="workout";["workout","history","progp","calendar","editp"].forEach(p=>document.getElementById(p).classList.toggle("hidden",S.page!=(p=="progp"?"prog":p=="editp"?"edit":p)));
   document.getElementById("ctl").classList.toggle("hidden",S.page!="workout");
   
   nw.classList.toggle("active",S.page=="workout");
   nh.classList.toggle("active",S.page=="history");
-  nc.classList.toggle("active",S.page=="calendar");nb.classList.toggle("active",S.page=="body");
+  np.classList.toggle("active",S.page=="prog");
+  nc.classList.toggle("active",S.page=="calendar");
   
   document.querySelector(".wk").classList.toggle("hidden",!!P[S.program].noWeek);heavy.classList.toggle("active",S.week=="heavy");
   light.classList.toggle("active",S.week=="light");
   document.getElementById("wkstrip").innerHTML=strip();
   if(S.page=="workout")renderW();
   if(S.page=="history")renderH();
-  if(S.page=="calendar")document.getElementById("calendar").innerHTML=cal();if(S.page=="body")document.getElementById("bodyp").innerHTML=bodyPage();if(S.page=="edit")document.getElementById("editp").innerHTML=editor()
+  if(S.page=="prog")document.getElementById("progp").innerHTML=progPage();
+  if(S.page=="calendar")document.getElementById("calendar").innerHTML=cal();
+  if(S.page=="edit")document.getElementById("editp").innerHTML=editor();
 }
 
 function setStatus(x){document.getElementById("status").textContent=x}
-program.innerHTML=Object.keys(P).map(x=>`<option>${x}</option>`).join("");program.value=S.program;program.onchange=e=>{S.program=e.target.value;S.day=Object.keys(P[S.program].days)[0];save();render()};heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="light";save();render()};nw.onclick=()=>{S.page="workout";save();render()};nh.onclick=()=>{S.page="history";save();render()};nc.onclick=()=>{S.page="calendar";save();render()};nb.onclick=()=>{S.page="body";save();render()};fixDrafts();render();if(token)sync();document.addEventListener("visibilitychange",()=>{if(!document.hidden&&token)sync()});setInterval(()=>{if(!document.hidden&&token&&!(document.activeElement&&document.activeElement.tagName=="INPUT"))sync()},20000);if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+program.innerHTML=Object.keys(P).map(x=>`<option>${x}</option>`).join("");program.value=S.program;program.onchange=e=>{S.program=e.target.value;S.day=Object.keys(P[S.program].days)[0];save();render()};heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="light";save();render()};nw.onclick=()=>{S.page="workout";save();render()};nh.onclick=()=>{S.page="history";save();render()};np.onclick=()=>{S.page="prog";save();render()};nc.onclick=()=>{S.page="calendar";save();render()};fixDrafts();render();if(token)sync();document.addEventListener("visibilitychange",()=>{if(!document.hidden&&token)sync()});setInterval(()=>{if(!document.hidden&&token&&!(document.activeElement&&document.activeElement.tagName=="INPUT"))sync()},20000);if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script></body></html>
