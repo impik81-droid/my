@@ -9,7 +9,7 @@
 :root{color-scheme:dark;-webkit-tap-highlight-color:transparent;--bg:#000;--card:#121214;--card2:#1b1b1e;--text:#fff;--muted:#8e8e93;--line:#26262b;--accent:#c4f94d;--h:Unbounded,"Arial Black",system-ui,sans-serif}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
-.app{max-width:760px;margin:auto;padding:calc(14px + env(safe-area-inset-top)) 16px calc(140px + env(safe-area-inset-bottom))}
+.app{max-width:760px;margin:auto;padding:calc(14px + env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom))}
 button{font:inherit;border:0;color:var(--text);background:var(--card2);border-radius:12px;padding:10px 13px}
 input,select{font:inherit;color:var(--text)}
 input,select{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px}
@@ -27,10 +27,11 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .user-box span{color:var(--accent);font-weight:600}
 .status{font-size:12px;color:var(--muted);margin:0 0 12px}
 
-/* Закрепленная нижняя навигация */
-nav{position:fixed;bottom:0;left:0;right:0;z-index:10;background:rgba(18,18,20,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;max-width:760px;margin:auto}
-nav button{flex:1;background:var(--card2);border:1px solid var(--line);padding:12px 4px;font-size:13px;font-weight:600}
-nav .active{background:var(--accent);color:#000;border-color:var(--accent)}
+/* Закрепленная нижняя навигация с иконками */
+nav{position:fixed;bottom:0;left:0;right:0;z-index:10;background:rgba(18,18,20,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom));display:flex;justify-content:space-around;max-width:760px;margin:auto}
+nav button{flex:1;background:none;border:0;border-radius:0;padding:4px 0;font-size:11px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:500}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav .active{color:var(--accent)}
 
 .wkstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px}
 .sd{display:flex;flex-direction:column;align-items:center;gap:8px;padding:11px 0;border-radius:20px;color:#d6d6da;font-size:14px}
@@ -58,7 +59,7 @@ nav .active{background:var(--accent);color:#000;border-color:var(--accent)}
 .sets span{font-size:12px;color:var(--muted);text-align:center}
 .sets input{width:100%;padding:9px;text-align:center}
 .check{width:38px;height:38px;padding:0;border-radius:50%}.check.on{background:var(--accent);color:#000}
-.fab{position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:5;background:var(--accent);color:#000;border-radius:999px;padding:20px 28px;font:800 15px var(--h);text-transform:uppercase;box-shadow:0 10px 30px rgba(0,0,0,.7)}
+.fab{position:fixed;right:16px;bottom:calc(70px + env(safe-area-inset-bottom));z-index:5;background:var(--accent);color:#000;border-radius:999px;padding:20px 28px;font:800 15px var(--h);text-transform:uppercase;box-shadow:0 10px 30px rgba(0,0,0,.7)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:12px}
 .hh{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px}.hh b{font:800 20px var(--h)}.hh button{padding:5px 10px;font-size:12px}
 
@@ -108,8 +109,25 @@ button.danger{background:#2a1418;color:#ffb6bd}
 <div id="authp" class="hidden"></div>
 <div id="status" class="status" onclick="sync()" style="cursor:pointer">Данные сохраняются локально. Для синхронизации войди в аккаунт.</div>
 
-<!-- Закрепленная нижняя навигация -->
-<nav><button id="nw" class="active">Тренировка</button><button id="nh">История</button><button id="np">Прогресс</button><button id="nc">Календарь</button></nav>
+<!-- Закрепленная нижняя навигация с иконками -->
+<nav>
+  <button id="nw" class="active">
+    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+    Дневник
+  </button>
+  <button id="nh">
+    <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+    История
+  </button>
+  <button id="np">
+    <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+    Прогресс
+  </button>
+  <button id="nc">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Календарь
+  </button>
+</nav>
 
 <div id="wkstrip" class="wkstrip"></div>
 <div id="ctl" class="ctl"><div class="seg" id="dayseg"></div><div class="seg wk"><button id="heavy">Тяж</button><button id="light">Лёг</button></div></div>
