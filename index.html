@@ -181,6 +181,7 @@ function hint(n){let e=lastEx(n);if(!e)return"";let a=e.sets.filter(s=>s.reps!==
 const mw=e=>Math.max(0,...e.sets.map(s=>+s.weight||0)),e1=s=>{let r=+s.reps||0;return r?Math.round((+s.weight||0)*(1+r/30)):0};
 function pr(i,e){let w=mw(e);if(!w)return false;let seen=false;for(let k=i+1;k<S.history.length;k++){let o=S.history[k].program===S.history[i].program?S.history[k].exercises.find(o=>o.name===e.name):null;if(o){seen=true;if(mw(o)>=w)return false}}return seen}
 const wk=d=>lk(new Date(d.getFullYear(),d.getMonth(),d.getDate()-((d.getDay()+6)%7)));
+function tomb(k){if(token)(S.del=S.del||{})[k]=Date.now()}
 const hk=x=>"h:"+(x.id||x.date);
 function merge(a,b){let m=new Map(),D=S.del||{};[...b,...a].forEach(x=>{if(!D[hk(x)])m.set(x.id||x.date,x)});return[...m.values()].sort((x,y)=>new Date(y.date)-new Date(x.date))}
 function exp(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({history:S.history})],{type:"application/json"}));a.download="workout-"+lk(new Date())+".json";a.click()}
@@ -262,7 +263,7 @@ async function finish(){
     let xDate = new Date(x.date);
     let isToday = lk(xDate) === todayKey;
     let isSameWorkout = x.program === S.program && x.day === S.day && x.week === wkx();
-    let keep=!(isToday&&isSameWorkout);if(!keep)(S.del=S.del||{})[hk(x)]=Date.now();return keep;
+    let keep=!(isToday&&isSameWorkout);if(!keep)tomb(hk(x));return keep;
   });
 
   let entry = {
@@ -438,7 +439,7 @@ function progPage() {
   return h;
 }
 
-async function delH(i){let x=S.history.splice(i,1)[0];(S.del=S.del||{})[hk(x)]=Date.now();save();await push();renderH();toast("Тренировка удалена",async()=>{x.id=Date.now();S.history=merge(S.history,[x]);save();await push();renderH()})}async function clearH(){if(confirm("Удалить ВСЮ историю на всех устройствах? Это нельзя отменить.")){S.del=S.del||{};S.history.forEach(x=>S.del[hk(x)]=Date.now());S.history=[];save();await push();renderH()}}function renderH(){document.getElementById("history").innerHTML=hist()}
+async function delH(i){let x=S.history.splice(i,1)[0];tomb(hk(x));save();await push();renderH();toast("Тренировка удалена",async()=>{x.id=Date.now();S.history=merge(S.history,[x]);save();await push();renderH()})}async function clearH(){if(confirm("Удалить ВСЮ историю на всех устройствах? Это нельзя отменить.")){S.history.forEach(x=>tomb(hk(x)));S.history=[];save();await push();renderH()}}function renderH(){document.getElementById("history").innerHTML=hist()}
 function cal(){let m={};S.history.forEach(x=>{let k=lk(new Date(x.date));if(!m[k])m[k]={day:x.day,week:x.week,fx:!!(P[x.program]||{}).noWeek}});let n0=new Date(),d=new Date(n0.getFullYear(),n0.getMonth()+(S.co||0),1),y=d.getFullYear(),mo=d.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate(),h=stats()+'<div class="card"><div class="hh" style="margin:0"><button onclick="cmo(-1)">‹</button><b style="font-size:15px">'+d.toLocaleDateString("ru-RU",{month:"long",year:"numeric"})+'</b><button onclick="cmo(1)">›</button></div><div style="display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#4da3ff;margin-right:5px"></i>Тяжёлая</span><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#f5a623;margin-right:5px"></i>Лёгкая</span></div></div><div class="cal">';for(let i=0;i<first;i++)h+='<div></div>';for(let i=1;i<=n;i++){let k=lk(new Date(y,mo,i)),x=m[k];if(x)h+=`<div class="${x.fx?"on-fixed":x.week==="light"?"on-light":"on-heavy"}" onclick="openDate('${k}')"><b>${i}</b><br>День ${L[x.day]||x.day}${x.fx?"":" · "+(x.week==="light"?"лёг":"тяж")}</div>`;else h+=`<div><b>${i}</b></div>`}return h+'</div>'}
 
 function renderAuth(){
