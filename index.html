@@ -166,7 +166,7 @@ const save=()=>localStorage.setItem(K,JSON.stringify(S)); const esc=x=>String(x)
 function parse(a){let o=[];for(let r of a){if(r[0].startsWith("SS")||r.length>4){let g=r[0].startsWith("SS")?r[0]:"";let st=g?1:0;for(let i=st;i<r.length;i+=4)if(r[i])o.push({group:g,name:r[i],sets:r[i+1]||1,weight:r[i+2]??0})}else o.push({group:"",name:r[0],sets:r[1]||1,weight:r[2]||0,cardio:String(r[0]).startsWith("Кардио")})}return o}
 const wkx=()=>P[S.program].noWeek?"fixed":S.week;
 function key(){return S.program+"|"+wkx()+"|"+S.day}
-function getLastExData(name){for(let h of S.history){if(wkOf(h)!==wkx())continue;for(let e of h.exercises){if(e.name===name&&e.sets&&e.sets.length>0){let last=[...e.sets].reverse().find(s=>s.weight!==""||s.reps!=="");if(last)return{weight:last.weight,reps:last.reps}}}}return null}
+function getLastExData(name){for(let h of S.history){if(h.program!==S.program||wkOf(h)!==wkx())continue;for(let e of h.exercises){if(e.name===name&&e.sets&&e.sets.length>0){let last=[...e.sets].reverse().find(s=>s.weight!==""||s.reps!=="");if(last)return{weight:last.weight,reps:last.reps}}}}return null}
 function draft(){let d0=S.drafts[key()];if(d0&&!d0.some(e=>e.m||e.sets.some(s=>s.done||s.reps!=="")))delete S.drafts[key()];if(!S.drafts[key()]){S.drafts[key()]=parse(P[S.program].days[S.day]).map(e=>{let last=getLastExData(e.name);let dw=last?last.weight:(e.weight||0);let dr=last?last.reps:"";return{name:e.name,group:e.group||"",cardio:!!e.cardio,sets:Array.from({length:e.sets+(wkx()==="heavy"&&!e.cardio?1:0)},()=>({weight:dw,reps:dr,done:false}))}})}save();return S.drafts[key()]}
 const L={A:"А",B:"Б",V:"В",G:"Г"},R="8–12";
 const RING='<div class="ring"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg></div>';
@@ -176,10 +176,10 @@ function toast(m,undo){let e=document.getElementById("toast");e.innerHTML=esc(m)
 const repsOf=n=>{let T=P[S.program].targets;if(T&&T[n])return T[n];return wkx()==="light"?"15–20":"8–12"};
 const dn=()=>{let n=(P[S.program].names||{})[S.day];return n?`<div class="sec" style="margin-top:0;color:var(--accent)">${esc(n)}</div>`:""};
 const wkOf=h=>h.week==="fixed"?"fixed":h.week==="light"?"light":"heavy";
-function lastEx(n){for(let h of S.history){if(wkOf(h)!==wkx())continue;let e=h.exercises.find(e=>e.name===n);if(e)return e}return null}
+function lastEx(n){for(let h of S.history){if(h.program!==S.program||wkOf(h)!==wkx())continue;let e=h.exercises.find(e=>e.name===n);if(e)return e}return null}
 function hint(n){let e=lastEx(n);if(!e)return"";let a=e.sets.filter(s=>s.reps!=="");if(!a.length)return"";let w=Math.max(...a.map(s=>+s.weight||0)),up=w>0&&a.every(s=>+s.reps>=(+repsOf(n).split("–").pop())&&(+s.weight||0)===w);return`<div class="hint">Прошлый раз: ${esc(a.map(s=>(s.weight||0)+"×"+s.reps).join(" · "))}${up?` <b>→ попробуй ${w+2.5} кг</b>`:""}</div>`}
 const mw=e=>Math.max(0,...e.sets.map(s=>+s.weight||0)),e1=s=>{let r=+s.reps||0;return r?Math.round((+s.weight||0)*(1+r/30)):0};
-function pr(i,e){let w=mw(e);if(!w)return false;let seen=false;for(let k=i+1;k<S.history.length;k++){let o=S.history[k].exercises.find(o=>o.name===e.name);if(o){seen=true;if(mw(o)>=w)return false}}return seen}
+function pr(i,e){let w=mw(e);if(!w)return false;let seen=false;for(let k=i+1;k<S.history.length;k++){let o=S.history[k].program===S.history[i].program?S.history[k].exercises.find(o=>o.name===e.name):null;if(o){seen=true;if(mw(o)>=w)return false}}return seen}
 const wk=d=>lk(new Date(d.getFullYear(),d.getMonth(),d.getDate()-((d.getDay()+6)%7)));
 const hk=x=>"h:"+(x.id||x.date);
 function merge(a,b){let m=new Map(),D=S.del||{};[...b,...a].forEach(x=>{if(!D[hk(x)])m.set(x.id||x.date,x)});return[...m.values()].sort((x,y)=>new Date(y.date)-new Date(x.date))}
@@ -288,12 +288,12 @@ function hist(){
   let f=S.histDate||null;
   let h='<div class="hh"><b>История</b><span style="display:flex;gap:6px">';
   if(f){let fd=new Date(f);h+=`<button onclick="clearDate()">✕ ${fd.toLocaleDateString("ru-RU",{day:"numeric",month:"long"})}</button>`}
-  h+='<button onclick="exp()" aria-label="Экспорт">⬇</button><button onclick="document.getElementById(\'imp\').click()" aria-label="Импорт">⬆</button><button class="danger" onclick="clearH()">Очистить</button></span></div><input id="imp" type="file" accept=".json" class="hidden" onchange="imp(this)">';
+  h+='<button onclick="exp()" aria-label="Экспорт">⬇</button><button onclick="document.getElementById(\'imp\').click()" aria-label="Импорт">⬆</button></span></div><input id="imp" type="file" accept=".json" class="hidden" onchange="imp(this)">';
   const DC={A:"#f5a623",B:"#4f8cff",V:"#ff5d9e",G:"#8b7bff"},TR='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg>';
   let any=false;
   S.history.forEach((x,i)=>{
     let kd=lk(new Date(x.date));
-    if(f&&kd!==f)return;
+    if(f&&kd!==f)return;if(x.program!==S.program)return;
     any=true;
     let dt=new Date(x.date),ds=isNaN(dt)?esc(x.dateText):dt.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
     let wtag=(P[x.program]||{}).noWeek?"":x.week==="light"?'<span class="wt light">ЛЁГ</span>':'<span class="wt heavy">ТЯЖ</span>';
@@ -315,6 +315,7 @@ function hist(){
     h+='</div>';
   });
   if(!any)h+=f?'<div class="empty">Нет тренировок за эту дату</div>':'<div class="empty">История пустая</div>';
+  h+='<button class="danger" style="width:100%;margin-top:80px;opacity:.7" onclick="clearH()">Очистить всю историю</button>';
   return h;
 }
 function openDate(k){S.histDate=k;S.page="history";save();render()}
@@ -325,7 +326,7 @@ function toggleChart(exName,hi){
   if(c.innerHTML.trim()!==""){c.innerHTML="";return}
   let points=[];
   [...S.history].reverse().forEach(h=>{
-    let ex=h.exercises.find(e=>e.name===exName);
+    let ex=h.program===S.history[hi].program?h.exercises.find(e=>e.name===exName):null;
     if(ex){
       let maxW=0;
       ex.sets.forEach(s=>{let w=parseFloat(s.weight)||0;if(w>maxW)maxW=w});
@@ -384,7 +385,7 @@ function progPage() {
 
   let points = [];
   [...S.history].reverse().forEach(hItem => {
-    let ex = hItem.exercises.find(e => e.name === S.progEx);
+    let ex = hItem.program===S.program ? hItem.exercises.find(e => e.name === S.progEx) : null;
     if (ex) {
       let maxW = 0;
       ex.sets.forEach(s => { let w = parseFloat(s.weight)||0; if (w > maxW) maxW = w; });
@@ -437,7 +438,7 @@ function progPage() {
   return h;
 }
 
-async function delH(i){let x=S.history.splice(i,1)[0];(S.del=S.del||{})[hk(x)]=Date.now();save();await push();renderH();toast("Тренировка удалена",async()=>{x.id=Date.now();S.history=merge(S.history,[x]);save();await push();renderH()})}async function clearH(){if(confirm("Удалить всю историю?")){S.del=S.del||{};S.history.forEach(x=>S.del[hk(x)]=Date.now());S.history=[];save();await push();renderH()}}function renderH(){document.getElementById("history").innerHTML=hist()}
+async function delH(i){let x=S.history.splice(i,1)[0];(S.del=S.del||{})[hk(x)]=Date.now();save();await push();renderH();toast("Тренировка удалена",async()=>{x.id=Date.now();S.history=merge(S.history,[x]);save();await push();renderH()})}async function clearH(){if(confirm("Удалить ВСЮ историю на всех устройствах? Это нельзя отменить.")){S.del=S.del||{};S.history.forEach(x=>S.del[hk(x)]=Date.now());S.history=[];save();await push();renderH()}}function renderH(){document.getElementById("history").innerHTML=hist()}
 function cal(){let m={};S.history.forEach(x=>{let k=lk(new Date(x.date));if(!m[k])m[k]={day:x.day,week:x.week,fx:!!(P[x.program]||{}).noWeek}});let n0=new Date(),d=new Date(n0.getFullYear(),n0.getMonth()+(S.co||0),1),y=d.getFullYear(),mo=d.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate(),h=stats()+'<div class="card"><div class="hh" style="margin:0"><button onclick="cmo(-1)">‹</button><b style="font-size:15px">'+d.toLocaleDateString("ru-RU",{month:"long",year:"numeric"})+'</b><button onclick="cmo(1)">›</button></div><div style="display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#4da3ff;margin-right:5px"></i>Тяжёлая</span><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#f5a623;margin-right:5px"></i>Лёгкая</span></div></div><div class="cal">';for(let i=0;i<first;i++)h+='<div></div>';for(let i=1;i<=n;i++){let k=lk(new Date(y,mo,i)),x=m[k];if(x)h+=`<div class="${x.fx?"on-fixed":x.week==="light"?"on-light":"on-heavy"}" onclick="openDate('${k}')"><b>${i}</b><br>День ${L[x.day]||x.day}${x.fx?"":" · "+(x.week==="light"?"лёг":"тяж")}</div>`;else h+=`<div><b>${i}</b></div>`}return h+'</div>'}
 
 function renderAuth(){
