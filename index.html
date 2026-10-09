@@ -191,7 +191,13 @@ function delSet(i){draft()[i].m=1;let s=draft()[i].sets;if(s.length>1){s.pop();t
 function ren(i){pick(i,"w")}
 function note(i,v){draft()[i].note=v;draft()[i].m=1;touch()}
 function cmo(d){S.co=Math.min(0,(S.co||0)+d);save();render()}
-function stats(){let H=S.history,t=new Date(),mk=lk(t).slice(0,7),mc=H.filter(x=>lk(new Date(x.date)).startsWith(mk)).length,c={};H.forEach(x=>{let k=wk(new Date(x.date));c[k]=1});let ks=[];for(let i=7;i>=0;i--)ks.push(wk(new Date(t.getFullYear(),t.getMonth(),t.getDate()-7*i)));let st=0;for(let i=ks.length-1;i>=0;i--){if(c[ks[i]])st++;else if(i<ks.length-1)break}return`<div class="card"><div style="display:flex;justify-content:space-around;text-align:center"><div><b class="big">${mc}</b><div class="hsub">за месяц</div></div><div><b class="big">${st}</b><div class="hsub">недель подряд</div></div></div></div>`}
+function stats(){
+  let H=S.history.filter(x=>x.program===S.program),t=new Date(),mk=lk(t).slice(0,7),mc=H.filter(x=>lk(new Date(x.date)).startsWith(mk)).length,c={};
+  H.forEach(x=>{let k=wk(new Date(x.date));c[k]=1});
+  let ks=[];for(let i=7;i>=0;i--)ks.push(wk(new Date(t.getFullYear(),t.getMonth(),t.getDate()-7*i)));
+  let st=0;for(let i=ks.length-1;i>=0;i--){if(c[ks[i]])st++;else if(i<ks.length-1)break}
+  return`<div class="card"><div style="display:flex;justify-content:space-around;text-align:center"><div><b class="big">${mc}</b><div class="hsub">за месяц</div></div><div><b class="big">${st}</b><div class="hsub">недель подряд</div></div></div></div>`;
+}
 let ED=null,PK=null,pt;
 function pushSoon(){clearTimeout(pt);pt=setTimeout(push,1500)}
 function touch(){(S.dts=S.dts||{})[key()]=Date.now();save();pushSoon()}
@@ -231,7 +237,6 @@ function edSave(){edCommit();ED=null;S.page="workout";render();toast("Прогр
 function addDay(){edCommit();let ds=P[S.program].days,k=["A","B","V","G"].find(x=>!ds[x]);if(!k)return toast("Максимум 4 дня");ds[k]=[["Кардио: Ходьба на дорожке",1,10,""]];S.progs[S.program]={...P[S.program],days:ds};S.day=k;save();openEd()}
 function newProg(){let n=(prompt("Название новой программы:")||"").trim();if(!n||P[n])return n&&toast("Такая программа уже есть");edCommit();P[n]={days:{A:[["Кардио: Ходьба на дорожке",1,10,""]]}};S.progs[n]=P[n];S.program=n;S.day="A";fillProg();save();openEd()}
 function tgl(){showAuth=!showAuth;renderAuth()}
-
 function logout(){
   token="";
   userEmail="";
@@ -239,7 +244,6 @@ function logout(){
   localStorage.removeItem("wd_email");
   showAuth=false;
   
-  // Очищаем историю на экране при выходе из аккаунта
   S.history = [];
   S.page = "workout";
   save();
@@ -248,9 +252,8 @@ function logout(){
   renderAuth();
   render();
 }
-
 function lk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k];h+=`<div class="sd ${td?"today":""}"><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"></i><b>${x?(L[x]||x):"--"}</b></div>`}return h}
+function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{if(x.program===S.program)m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k];h+=`<div class="sd ${td?"today":""}"><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"></i><b>${x?(L[x]||x):"--"}</b></div>`}return h}
 function renderW(){let d=draft(),days=Object.keys(P[S.program].days),h=dn(),last="",prev="";
 document.getElementById("dayseg").innerHTML=days.map(x=>`<button class="${x==S.day?"active":""}" onclick="day('${x}')">${L[x]||x}</button>`).join("");
 d.forEach((e,i)=>{if(e.cardio){if(prev!="c")h+='<div class="sec">Кардио</div>';h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name.replace(/^Кардио:\s*/,""))}</div><div class="sb">${esc(e.sets[0].weight)} минут</div></div></div></div>`;prev="c";return}
@@ -457,7 +460,16 @@ function progPage() {
 }
 
 async function delH(i){let x=S.history.splice(i,1)[0];tomb(hk(x));save();await push();renderH();toast("Тренировка удалена",async()=>{x.id=Date.now();S.history=merge(S.history,[x]);save();await push();renderH()})}async function clearH(){if(confirm("Удалить ВСЮ историю на всех устройствах? Это нельзя отменить.")){S.history.forEach(x=>tomb(hk(x)));S.history=[];save();await push();renderH()}}function renderH(){document.getElementById("history").innerHTML=hist()}
-function cal(){let m={};S.history.forEach(x=>{let k=lk(new Date(x.date));if(!m[k])m[k]={day:x.day,week:x.week,fx:!!(P[x.program]||{}).noWeek}});let n0=new Date(),d=new Date(n0.getFullYear(),n0.getMonth()+(S.co||0),1),y=d.getFullYear(),mo=d.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate(),h=stats()+'<div class="card"><div class="hh" style="margin:0"><button onclick="cmo(-1)">‹</button><b style="font-size:15px">'+d.toLocaleDateString("ru-RU",{month:"long",year:"numeric"})+'</b><button onclick="cmo(1)">›</button></div><div style="display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#4da3ff;margin-right:5px"></i>Тяжёлая</span><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#f5a623;margin-right:5px"></i>Лёгкая</span></div></div><div class="cal">';for(let i=0;i<first;i++)h+='<div></div>';for(let i=1;i<=n;i++){let k=lk(new Date(y,mo,i)),x=m[k];if(x)h+=`<div class="${x.fx?"on-fixed":x.week==="light"?"on-light":"on-heavy"}" onclick="openDate('${k}')"><b>${i}</b><br>День ${L[x.day]||x.day}${x.fx?"":" · "+(x.week==="light"?"лёг":"тяж")}</div>`;else h+=`<div><b>${i}</b></div>`}return h+'</div>'}
+
+function cal(){
+  let m={};
+  S.history.forEach(x=>{
+    if(x.program!==S.program)return;
+    let k=lk(new Date(x.date));
+    if(!m[k])m[k]={day:x.day,week:x.week,fx:!!(P[x.program]||{}).noWeek};
+  });
+  let n0=new Date(),d=new Date(n0.getFullYear(),n0.getMonth()+(S.co||0),1),y=d.getFullYear(),mo=d.getMonth(),first=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate(),h=stats()+'<div class="card"><div class="hh" style="margin:0"><button onclick="cmo(-1)">‹</button><b style="font-size:15px">'+d.toLocaleDateString("ru-RU",{month:"long",year:"numeric"})+'</b><button onclick="cmo(1)">›</button></div><div style="display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#4da3ff;margin-right:5px"></i>Тяжёлая</span><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#f5a623;margin-right:5px"></i>Лёгкая</span></div></div><div class="cal">';for(let i=0;i<first;i++)h+='<div></div>';for(let i=1;i<=n;i++){let k=lk(new Date(y,mo,i)),x=m[k];if(x)h+=`<div class="${x.fx?"on-fixed":x.week==="light"?"on-light":"on-heavy"}" onclick="openDate('${k}')"><b>${i}</b><br>День ${L[x.day]||x.day}${x.fx?"":" · "+(x.week==="light"?"лёг":"тяж")}</div>`;else h+=`<div><b>${i}</b></div>`}return h+'</div>';
+}
 
 function renderAuth(){
   let el=document.getElementById("authp");
