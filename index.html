@@ -198,7 +198,7 @@ function tomb(k){if(token)(S.del=S.del||{})[k]=Date.now()}
 const hk=x=>"h:"+(x.id||x.date);
 function merge(a,b){let m=new Map(),D=S.del||{};[...b,...a].forEach(x=>{if(!D[hk(x)])m.set(x.id||x.date,x)});return[...m.values()].sort((x,y)=>new Date(y.date)-new Date(x.date))}
 function exp(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({history:S.history})],{type:"application/json"}));a.download="workout-"+lk(new Date())+".json";a.click()}
-function imp(el){let f=el.files[0];if(!f)return;f.text().then(t=>{let j=JSON.parse(t);let jh=(j.history||[]).map((x,i)=>S.del&&S.del[hk(x)]?{...x,id:Date.now()+i}:x);S.history=merge(S.history,jh);save();push();render();toast("История импортирована")}).catch(()=>toast("Не удалось прочитать файл"))}
+async function imp(el){let f=el.files[0];el.value="";if(!f)return;try{let j=JSON.parse(await f.text());let jh=(j.history||[]).map((x,i)=>S.del&&S.del[hk(x)]?{...x,id:Date.now()+i}:x);S.history=merge(S.history,jh);let importedProgram=jh.find(x=>x.program&&P[x.program])?.program;if(importedProgram){S.program=importedProgram;S.day=Object.keys(P[S.program].days)[0];fillProg()}save();await push();render();toast("История импортирована и сохранена") }catch(e){toast("Не удалось импортировать историю")}}
 function addSet(i){draft()[i].m=1;let s=draft()[i].sets,l=s[s.length-1]||{weight:0,reps:""};s.push({weight:l.weight,reps:l.reps,done:false});touch();renderW()}
 function delSet(i){draft()[i].m=1;let s=draft()[i].sets;if(s.length>1){s.pop();touch();renderW()}}
 function ren(i){pick(i,"w")}
