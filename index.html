@@ -231,7 +231,24 @@ function edSave(){edCommit();ED=null;S.page="workout";render();toast("Прогр
 function addDay(){edCommit();let ds=P[S.program].days,k=["A","B","V","G"].find(x=>!ds[x]);if(!k)return toast("Максимум 4 дня");ds[k]=[["Кардио: Ходьба на дорожке",1,10,""]];S.progs[S.program]={...P[S.program],days:ds};S.day=k;save();openEd()}
 function newProg(){let n=(prompt("Название новой программы:")||"").trim();if(!n||P[n])return n&&toast("Такая программа уже есть");edCommit();P[n]={days:{A:[["Кардио: Ходьба на дорожке",1,10,""]]}};S.progs[n]=P[n];S.program=n;S.day="A";fillProg();save();openEd()}
 function tgl(){showAuth=!showAuth;renderAuth()}
-function logout(){token="";userEmail="";localStorage.removeItem("wd_token");localStorage.removeItem("wd_email");showAuth=false;setStatus("Выход выполнен. Данные сохраняются локально.");renderAuth();render()}
+
+function logout(){
+  token="";
+  userEmail="";
+  localStorage.removeItem("wd_token");
+  localStorage.removeItem("wd_email");
+  showAuth=false;
+  
+  // Очищаем историю на экране при выходе из аккаунта
+  S.history = [];
+  S.page = "workout";
+  save();
+  
+  setStatus("Выход выполнен. Данные сохраняются локально.");
+  renderAuth();
+  render();
+}
+
 function lk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k];h+=`<div class="sd ${td?"today":""}"><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"></i><b>${x?(L[x]||x):"--"}</b></div>`}return h}
 function renderW(){let d=draft(),days=Object.keys(P[S.program].days),h=dn(),last="",prev="";
