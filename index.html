@@ -261,7 +261,19 @@ if(e.group&&e.group!=last)h+=`<div class="ss">${ICO}Суперсет ${esc(e.gro
 h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name)}</div><div class="sb">${e.sets.length-(P[S.program].warm?1:0)} × ${repsOf(e.name)} повторений <em>${esc(e.sets[0].weight)} кг</em></div>${hint(e.name)}</div></div><div class="sets"><span>№</span><span>Вес, кг</span><span>Повт.</span><span>✓</span>`;
 e.sets.forEach((s,j)=>h+=`<span>${P[S.program].warm?(j?j:"Р"):j+1}</span><input value="${esc(s.weight)}" type="number" step=".5" inputmode="decimal" onchange="up(${i},${j},'weight',this.value)"><input value="${esc(s.reps)}" type="number" inputmode="numeric" onchange="up(${i},${j},'reps',this.value)"><button class="check ${s.done?"on":""}" onclick="tg(${i},${j})">${s.done?"✓":"○"}</button>`);h+=`</div><div class="ctr"><button onclick="addSet(${i})">+ подход</button><button onclick="delSet(${i})">− подход</button><button onclick="ren(${i})">Заменить</button></div><input class="note" placeholder="Заметка" value="${esc(e.note||"")}" onchange="note(${i},this.value)"></div>`});
 h+='<button class="edbtn" onclick="openEd()">Редактировать день</button>';h+=`<button class="fab" onclick="finish()">Сохранить день ${L[S.day]||S.day}</button>`;document.getElementById("workout").innerHTML=h}
-function up(i,j,k,v){let E=draft()[i],sets=E.sets;E.m=1;sets[j][k]=v;if(j===0){for(let x=1;x<sets.length;x++)sets[x][k]=v}else if(j+1<sets.length&&(sets[j+1][k]===""||sets[j+1][k]==0))sets[j+1][k]=v;touch();renderW()}function tg(i,j){let s=draft()[i].sets[j];s.done=!s.done;touch();renderW()}function day(x){S.day=x;save();render()}
+function up(i, j, k, v) {
+  let E = draft()[i], sets = E.sets;
+  E.m = 1;
+  sets[j][k] = v;
+
+  // Каскадное обновление: изменение в подходе j катится волной на все последующие
+  for (let x = j + 1; x < sets.length; x++) {
+    sets[x][k] = v;
+  }
+
+  touch();
+  renderW();
+}function tg(i,j){let s=draft()[i].sets[j];s.done=!s.done;touch();renderW()}function day(x){S.day=x;save();render()}
 async function api(url,opt={}){opt.headers={...(opt.headers||{}),...(token?{Authorization:"Bearer "+token}:{})};let r;try{r=await fetch(url,opt)}catch(e){throw new Error("нет связи с сервером (открой сайт по адресу pages.dev)")}if(r.status===401&&token){token="";localStorage.removeItem("wd_token")}if(!r.ok){let tx="";try{tx=(await r.text()).slice(0,200)}catch(e){}let m=tx;try{m=JSON.parse(tx).error||tx}catch(e){}throw new Error("["+r.status+"] "+(m||r.statusText||"пустой ответ"))}return r.json()}
 async function sync(){if(!token)return;try{let x=await api("/api/data");if(x.data){let c=JSON.parse(x.data);S.del=S.del||{};let cdl=c.del||{};for(let k in cdl)S.del[k]=Math.max(S.del[k]||0,cdl[k]);let lim=Date.now()-180*864e5;for(let k in S.del)if(S.del[k]<lim)delete S.del[k];S.history=merge(S.history,c.history||[]);S.progs={...(c.progs||{}),...(S.progs||{})};Object.assign(P,S.progs);fillProg();fixDrafts();S.dts=S.dts||{};Object.keys(S.drafts).forEach(k=>{if(!S.dts[k]&&S.drafts[k].some(e=>e.sets.some(x=>x.done||x.reps!=="")))S.dts[k]=Date.now()});let cd=c.drafts||{},ct=c.dts||{};for(let k of new Set([...Object.keys(cd),...Object.keys(ct)]))if((ct[k]||0)>(S.dts[k]||0)){if(cd[k])S.drafts[k]=cd[k];else delete S.drafts[k];S.dts[k]=ct[k]}
 fixDrafts();save();render();await push();let l=S.history[0];setStatus("Синхронизировано ☁️ Тренировок: "+S.history.length+" (в облаке было "+(c.history||[]).length+")"+(l?". Последняя: "+new Date(l.date).toLocaleDateString("ru-RU",{day:"numeric",month:"short"})+", день "+(L[l.day]||l.day):"")+". Нажми, чтобы обновить.")}}catch(e){setStatus("Не удалось синхронизировать: "+e.message)}}
