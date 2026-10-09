@@ -259,8 +259,15 @@ document.getElementById("dayseg").innerHTML=days.map(x=>`<button class="${x==S.d
 d.forEach((e,i)=>{if(e.cardio){if(prev!="c")h+='<div class="sec">Кардио</div>';h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name.replace(/^Кардио:\s*/,""))}</div><div class="sb">${esc(e.sets[0].weight)} минут</div></div></div></div>`;prev="c";return}
 if(e.group&&e.group!=last)h+=`<div class="ss">${ICO}Суперсет ${esc(e.group.replace("SS",""))}</div>`;last=e.group||"";prev="e";
 h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name)}</div><div class="sb">${e.sets.length-(P[S.program].warm?1:0)} × ${repsOf(e.name)} повторений <em>${esc(e.sets[0].weight)} кг</em></div>${hint(e.name)}</div></div><div class="sets"><span>№</span><span>Вес, кг</span><span>Повт.</span><span>✓</span>`;
-e.sets.forEach((s,j)=>h+=`<span>${P[S.program].warm?(j?j:"Р"):j+1}</span><input value="${esc(s.weight)}" type="number" step=".5" inputmode="decimal" onchange="up(${i},${j},'weight',this.value)"><input value="${esc(s.reps)}" type="number" inputmode="numeric" onchange="up(${i},${j},'reps',this.value)"><button class="check ${s.done?"on":""}" onclick="tg(${i},${j})">${s.done?"✓":"○"}</button>`);h+=`</div><div class="ctr"><button onclick="addSet(${i})">+ подход</button><button onclick="delSet(${i})">− подход</button><button onclick="ren(${i})">Заменить</button></div><input class="note" placeholder="Заметка" value="${esc(e.note||"")}" onchange="note(${i},this.value)"></div>`});
+e.sets.forEach((s,j)=>h+=`<span>${P[S.program].warm?(j?j:"Р"):j+1}</span><input value="${esc(s.weight)}" type="number" step=".5" inputmode="decimal" onchange="up(${i},${j},'weight',this.value)"><input value="${esc(s.reps)}" type="number" inputmode="numeric" onchange="up(${i},${j},'reps',this.value)"><button class="check ${s.done?"on":""}" onclick="tg(${i},${j})">${s.done?"✓":"○"}</button>`);h+=`</div><div class="ctr"><button onclick="addSet(${i})">+ подход</button><button onclick="delSet(${i})">− подход</button><button onclick="ren(${i})">Заменить</button><button onclick="showGif(${i})">🎞 Техника</button></div><input class="note" placeholder="Заметка" value="${esc(e.note||"")}" onchange="note(${i},this.value)"></div>`});
 h+='<button class="edbtn" onclick="openEd()">Редактировать день</button>';h+=`<button class="fab" onclick="finish()">Сохранить день ${L[S.day]||S.day}</button>`;document.getElementById("workout").innerHTML=h}
+function showGif(i){
+  const e=draft()[i];
+  if(!e||!e.name)return;
+  const q=e.name+" упражнение техника GIF анимация";
+  window.open("https://www.google.com/search?tbm=isch&q="+encodeURIComponent(q),"_blank","noopener,noreferrer");
+}
+
 function up(i, j, k, v) {
   let E = draft()[i], sets = E.sets;
   E.m = 1;
