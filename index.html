@@ -55,7 +55,7 @@ nav .active{color:var(--accent)}
 .nm{font-size:19px;font-weight:600;line-height:1.2}
 .sb{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:6px;color:var(--muted);font-size:16px}
 .sb em{font-style:normal;color:#fff;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:15px}
-.ex{margin-bottom:24px}.ex-photo{display:block;width:100%;max-width:520px;margin:12px auto 0;border:1px solid #8e6b1c;border-radius:16px;box-shadow:0 8px 24px #0008}
+.ex{margin-bottom:24px}.ex-thumb{flex:none;width:64px;height:64px;border-radius:50%;object-fit:cover;border:1px solid #d9a928;box-shadow:0 3px 12px #0008}
 .sets{display:grid;grid-template-columns:28px 1fr 1fr 40px;gap:6px;align-items:center;margin-top:12px}
 .sets span{font-size:12px;color:var(--muted);text-align:center}
 .sets input{width:100%;padding:9px;text-align:center}
@@ -170,7 +170,7 @@ function key(){return S.program+"|"+wkx()+"|"+S.day}
 function getLastExData(name){for(let h of S.history){if(h.program!==S.program||wkOf(h)!==wkx())continue;for(let e of h.exercises){if(e.name===name&&e.sets&&e.sets.length>0){let last=[...e.sets].reverse().find(s=>s.weight!==""||s.reps!=="");if(last)return{weight:last.weight,reps:last.reps}}}}return null}
 function draft(){let d0=S.drafts[key()];if(d0&&!d0.some(e=>e.m||e.sets.some(s=>s.done||s.reps!=="")))delete S.drafts[key()];if(!S.drafts[key()]){S.drafts[key()]=parse(P[S.program].days[S.day]).map(e=>{let last=getLastExData(e.name);let dw=last?last.weight:(e.weight||0);let dr=last?last.reps:"";return{name:e.name,group:e.group||"",cardio:!!e.cardio,sets:Array.from({length:e.sets+(wkx()==="heavy"&&!e.cardio?1:0)},()=>({weight:dw,reps:dr,done:false}))}})}save();return S.drafts[key()]}
 const L={A:"А",B:"Б",V:"В",G:"Г"},R="8–12";
-const EXIMG={"Тяга горизонтального блока двумя руками":"two-arm-horizontal-row.png"};
+const EXIMG={"Тяга горизонтального блока двумя руками":"two-arm-horizontal-row-circle.png"};
 const RING='<div class="ring"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg></div>';
 function exerciseIcon(name){
  const n=String(name||'').toLowerCase();
@@ -275,7 +275,7 @@ function renderW(){let d=draft(),days=Object.keys(P[S.program].days),h=dn(),last
 document.getElementById("dayseg").innerHTML=days.map(x=>`<button class="${x==S.day?"active":""}" onclick="day('${x}')">${L[x]||x}</button>`).join("");
 d.forEach((e,i)=>{if(e.cardio){if(prev!="c")h+='<div class="sec">Кардио</div>';h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name.replace(/^Кардио:\s*/,""))}</div><div class="sb">${esc(e.sets[0].weight)} минут</div></div></div></div>`;prev="c";return}
 if(e.group&&e.group!=last)h+=`<div class="ss">${ICO}Суперсет ${esc(e.group.replace("SS",""))}</div>`;last=e.group||"";prev="e";
- h+=`<div class="ex"><div class="row">${exerciseIcon(e.name)}<div><div class="nm">${esc(e.name)}</div><div class="sb">${e.sets.length-(P[S.program].warm?1:0)} × ${repsOf(e.name)} повторений <em>${esc(e.sets[0].weight)} кг</em></div>${hint(e.name)}</div></div>${EXIMG[e.name]?`<img class="ex-photo" src="${esc(EXIMG[e.name])}" alt="${esc(e.name)}">`:''}<div class="sets"><span>№</span><span>Вес, кг</span><span>Повт.</span><span>✓</span>`;
+ h+=`<div class="ex"><div class="row">${EXIMG[e.name]?`<img class="ex-thumb" src="${esc(EXIMG[e.name])}" alt="${esc(e.name)}">`:exerciseIcon(e.name)}<div><div class="nm">${esc(e.name)}</div><div class="sb">${e.sets.length-(P[S.program].warm?1:0)} × ${repsOf(e.name)} повторений <em>${esc(e.sets[0].weight)} кг</em></div>${hint(e.name)}</div></div><div class="sets"><span>№</span><span>Вес, кг</span><span>Повт.</span><span>✓</span>`;
 e.sets.forEach((s,j)=>h+=`<span>${P[S.program].warm?(j?j:"Р"):j+1}</span><input value="${esc(s.weight)}" type="number" step=".5" inputmode="decimal" onchange="up(${i},${j},'weight',this.value)"><input value="${esc(s.reps)}" type="number" inputmode="numeric" onchange="up(${i},${j},'reps',this.value)"><button class="check ${s.done?"on":""}" onclick="tg(${i},${j})">${s.done?"✓":"○"}</button>`);h+=`</div><div class="ctr"><button onclick="addSet(${i})">+ подход</button><button onclick="delSet(${i})">− подход</button><button onclick="ren(${i})">Заменить</button></div><input class="note" placeholder="Заметка" value="${esc(e.note||"")}" onchange="note(${i},this.value)"></div>`});
 h+='<button class="edbtn" onclick="openEd()">Редактировать день</button>';h+=`<button class="fab" onclick="finish()">Сохранить день ${L[S.day]||S.day}</button>`;document.getElementById("workout").innerHTML=h}
 
