@@ -1,4 +1,4 @@
-const C="wd4";
+const C="wd5";
 const OLD=["wd1","wd2","wd3"];
 self.addEventListener("install",e=>{
   e.waitUntil(caches.open(C).then(c=>c.addAll(["./","index.html"])).then(()=>self.skipWaiting()));
