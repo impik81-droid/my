@@ -130,7 +130,6 @@ button.danger{background:#2a1418;color:#ffb6bd}
   </button>
 </nav>
 
-<div id="wkstrip" class="wkstrip"></div>
 <div id="ctl" class="ctl"><div class="seg" id="dayseg"></div><div class="seg wk"><button id="heavy">Тяж</button><button id="light">Лёг</button></div></div>
 <div id="workout"></div><div id="history" class="hidden"></div><div id="progp" class="hidden"></div><div id="calendar" class="hidden"></div><div id="editp" class="hidden"></div>
 </div><div id="toast" class="toast hidden"></div><div id="sheet" class="sheetbg hidden" onclick="if(event.target===this)closeSh()"></div>
@@ -610,7 +609,6 @@ function render(){
   
   document.querySelector(".wk").classList.toggle("hidden",!!P[S.program].noWeek);heavy.classList.toggle("active",S.week=="heavy");
   light.classList.toggle("active",S.week=="light");
-  document.getElementById("wkstrip").innerHTML=strip();
   if(S.page=="workout")renderW();
   if(S.page=="history")renderH();
   if(S.page=="prog")document.getElementById("progp").innerHTML=progPage();
