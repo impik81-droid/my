@@ -35,7 +35,7 @@ nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width
 nav .active{color:var(--accent)}
 
 .wkstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px}
-.sd{display:flex;flex-direction:column;align-items:center;gap:8px;padding:11px 0;border-radius:20px;color:#d6d6da;font-size:14px}
+.sd{display:flex;flex-direction:column;align-items:center;gap:8px;padding:11px 0;border-radius:20px;color:#d6d6da;font-size:14px}.sd.clickable{cursor:pointer}.sd.clickable:active{background:var(--card2)}
 .sd.today{background:var(--card2);color:#fff}
 .sd i{width:10px;height:10px;border-radius:50%;background:#2b2b30}.sd i.on{background:var(--accent)}
 .sd b{font:800 14px var(--h);color:#8a8a90}.sd.today b{color:#fff}
@@ -354,7 +354,7 @@ function logout(){
   render();
 }
 function lk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{if(x.program===S.program)m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k];h+=`<div class="sd ${td?"today":""}"><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"></i><b>${x?(L[x]||x):"--"}</b></div>`}return h}
+function strip(){let t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),m={},wd=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],h="";S.history.forEach(x=>{if(x.program===S.program)m[lk(new Date(x.date))]=x.day});for(let i=0;i<7;i++){let d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),k=lk(d),td=k==lk(t),x=td?S.day:m[k],on=td||m[k],click=m[k]?` onclick="openDate('${k}')" role="button"`:"";h+=`<div class="sd ${td?"today":""} ${m[k]?"clickable":""}"${click}><span>${td?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0"):wd[i]}</span><i class="${on?"on":""}"></i><b>${x?(L[x]||x):"--"}</b></div>`}return h}
 function renderW(){let d=draft(),days=Object.keys(P[S.program].days),h=dn(),last="",prev="";
 document.getElementById("dayseg").innerHTML=days.map(x=>`<button class="${x==S.day?"active":""}" onclick="day('${x}')">${L[x]||x}</button>`).join("");
 d.forEach((e,i)=>{if(e.cardio){if(prev!="c")h+='<div class="sec">Кардио</div>';h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name.replace(/^Кардио:\s*/,""))}</div><div class="sb">${esc(e.sets[0].weight)} минут</div></div></div></div>`;prev="c";return}
