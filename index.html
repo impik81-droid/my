@@ -15,13 +15,13 @@ input,select{font:inherit;color:var(--text)}
 input,select{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px}
 .hidden{display:none!important}
 .program-screen{position:fixed;inset:0;z-index:20;background:var(--bg);overflow:auto;padding:calc(28px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}.program-picker{max-width:760px;margin:auto}.program-picker h1{font:800 24px var(--h);margin:20px 0 8px;text-transform:uppercase}.program-picker p{color:var(--muted);margin:0 0 22px}.program-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.program-choice{background:var(--card);border:1px solid var(--line);border-radius:16px;text-align:left;padding:16px;min-height:100px;cursor:pointer}.program-choice:hover,.program-choice:focus-visible{border-color:var(--accent);outline:0}.program-choice b{display:block;font:800 15px var(--h);margin-bottom:9px}.program-choice span{color:var(--muted);font-size:13px}@media(max-width:460px){.program-grid{grid-template-columns:1fr}}
-select option{background:#1b1b1e;color:#fff}
+select option{background:#1b1b1e;color:#fff}.program-choice.selected{border:2px solid var(--accent);background:#20251a}.program-choice.selected b:before{content:"✓ ";color:var(--accent)}.program-close{float:right;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;width:38px;height:38px;font-size:20px}
 button,select{-webkit-tap-highlight-color:transparent;outline:0}
 button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
 .sp,.round{flex:none;width:46px;height:46px;border-radius:50%}
 .round{border:1px solid var(--line);background:none;padding:0;display:grid;place-items:center}
-#program{flex:1;min-width:0;appearance:none;-webkit-appearance:none;background:none;border:0;text-align:center;text-align-last:center;text-transform:uppercase;font:800 16px var(--h);letter-spacing:.2px}
+#programLauncher{flex:1;min-width:0;background:none;border:0;padding:7px 4px;text-align:center;text-transform:uppercase;font:800 15px var(--h);letter-spacing:.2px;line-height:1.15}#programLauncher small{display:block;color:var(--muted);font:600 10px var(--h);letter-spacing:.5px;margin-top:3px;text-transform:none}
 .auth{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px}
 .auth-row{display:flex;gap:7px;flex-wrap:wrap}.auth-row input{flex:1;min-width:130px}
 .user-box{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 14px;margin-bottom:12px;font-size:14px}
@@ -105,7 +105,7 @@ button.danger{background:#2a1418;color:#ffb6bd}
 .sh{width:100%;max-width:760px;margin:auto;background:var(--card);border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:80vh;overflow:auto}
 .alt{width:100%;text-align:left;margin-top:6px;background:var(--card2);border:1px solid var(--line)}
 </style></head><body><div id="programScreen" class="program-screen hidden"></div><div class="app">
-<div class="top"><span class="sp"></span><select id="program"></select><button class="round" onclick="tgl()" aria-label="Аккаунт"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/></svg></button></div>
+<div class="top"><span class="sp"></span><button id="programLauncher" onclick="openPrograms()" aria-label="Открыть список программ"></button><button class="round" onclick="tgl()" aria-label="Аккаунт"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/></svg></button></div>
 
 <div id="authp" class="hidden"></div>
 <div id="status" class="status" onclick="sync()" style="cursor:pointer">Данные сохраняются локально. Для синхронизации войди в аккаунт.</div>
@@ -324,9 +324,10 @@ function closeSh(){PK=null;document.getElementById("sheet").classList.add("hidde
 function choose(k){setName(PK.list[k])}
 function own(){let n=(prompt("Название упражнения:")||"").trim();if(n)setName(n);else closeSh()}
 function setName(n){let {i,m}=PK;if(m=="e")ED[i].name=n;else{let e=draft()[i],l=getLastExData(n);e.name=n;e.m=1;e.sets.forEach(x=>{x.weight=l?l.weight:0;x.reps=l?l.reps:"";x.done=false})}touch();closeSh();render()}
-function fillProg(){program.innerHTML=Object.keys(P).map(x=>`<option>${esc(x)}</option>`).join("");program.value=S.program}
+function fillProg(){let b=document.getElementById("programLauncher");if(b)b.innerHTML=`${esc(S.program)}<small>Программа · ${Object.keys(P).length} доступно</small>`}
+function openPrograms(){selectingProgram=true;render()}
 function chooseProgram(name){S.program=name;S.day=Object.keys(P[name].days)[0];S.page="workout";localStorage.setItem(programKey(),name);selectingProgram=false;save();if(token)push();render()}
-function renderProgramPicker(){let names=Object.keys(P),h='<div class="program-picker"><h1>Выберите программу</h1><p>Выберите тренировочную программу, чтобы открыть дневник.</p><div class="program-grid">';names.forEach(n=>{let p=P[n],days=Object.keys(p.days||{}),desc=p.noWeek?'4 фиксированных дня':`${days.length} ${days.length===1?'день':'дня'} · ${days.map(x=>L[x]||x).join(', ')}`;h+=`<button class="program-choice" onclick="chooseProgram('${esc(n).replace(/'/g,"\\'")}')"><b>${esc(n)}</b><span>${esc(desc)}</span></button>`});document.getElementById("programScreen").innerHTML=h+'</div></div>'}
+function renderProgramPicker(){let names=Object.keys(P),h='<div class="program-picker"><button class="program-close" onclick="selectingProgram=false;render()" aria-label="Закрыть">×</button><h1>Выберите программу</h1><p>Доступно программ: <b style="color:var(--accent)">'+names.length+'</b><br>Выберите нужную программу — текущая отмечена галочкой.</p><div class="program-grid">';names.forEach(n=>{let p=P[n],days=Object.keys(p.days||{}),desc=p.noWeek?'4 фиксированных дня':`${days.length} ${days.length===1?'день':'дня'} · ${days.map(x=>L[x]||x).join(', ')}`,sel=n===S.program?' selected':'';h+=`<button class="program-choice${sel}" onclick="chooseProgram('${esc(n).replace(/'/g,"\\'")}')"><b>${esc(n)}</b><span>${esc(desc)}</span></button>`});document.getElementById("programScreen").innerHTML=h+'</div></div>'}
 
 function openEd(){ED=parse(P[S.program].days[S.day]).map(e=>({name:e.name,sets:e.sets,weight:e.weight,g:e.group?e.group.replace("SS",""):""}));S.page="edit";render()}
 function editor(){let h=`<div class="hh"><b>${esc(S.program)} · день ${L[S.day]||S.day}</b></div>`;ED.forEach((e,i)=>{h+=`<div class="card"><input style="width:100%" value="${esc(e.name)}" placeholder="Название" onchange="ED[${i}].name=this.value"><div class="er"><label>Подходы<input type="number" inputmode="numeric" value="${esc(e.sets)}" onchange="ED[${i}].sets=this.value"></label><label>Вес / мин<input type="number" step=".5" inputmode="decimal" value="${esc(e.weight)}" onchange="ED[${i}].weight=this.value"></label><label>Суперсет<input type="number" inputmode="numeric" placeholder="нет" value="${esc(e.g)}" onchange="ED[${i}].g=this.value"></label><button onclick="pick(${i},'e')">⇄</button><button onclick="edMv(${i},-1)">↑</button><button onclick="edMv(${i},1)">↓</button><button class="danger" onclick="ED.splice(${i},1);render()">✕</button></div></div>`});
@@ -597,6 +598,7 @@ function renderAuth(){
 }
 
 function render(){
+  fillProg();
   document.getElementById("programScreen").classList.toggle("hidden",!selectingProgram);
   if(selectingProgram){renderProgramPicker();return}
   if(S.page=="edit"&&!ED)S.page="workout";["workout","history","progp","calendar","editp"].forEach(p=>document.getElementById(p).classList.toggle("hidden",S.page!=(p=="progp"?"prog":p=="editp"?"edit":p)));
@@ -617,5 +619,5 @@ function render(){
 }
 
 function setStatus(x){document.getElementById("status").textContent=x}
-program.innerHTML=Object.keys(P).map(x=>`<option>${x}</option>`).join("");program.value=S.program;program.onchange=e=>{S.program=e.target.value;S.day=Object.keys(P[S.program].days)[0];localStorage.setItem(programKey(),S.program);selectingProgram=false;save();render()};heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="light";save();render()};nw.onclick=()=>{S.page="workout";save();render()};nh.onclick=()=>{S.page="history";save();render()};np.onclick=()=>{S.page="prog";save();render()};nc.onclick=()=>{S.page="calendar";save();render()};fixDrafts();render();if(token)sync();document.addEventListener("visibilitychange",()=>{if(!document.hidden&&token)sync()});setInterval(()=>{if(!document.hidden&&token&&!(document.activeElement&&document.activeElement.tagName=="INPUT"))sync()},20000);if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="light";save();render()};nw.onclick=()=>{S.page="workout";save();render()};nh.onclick=()=>{S.page="history";save();render()};np.onclick=()=>{S.page="prog";save();render()};nc.onclick=()=>{S.page="calendar";save();render()};fixDrafts();render();if(token)sync();document.addEventListener("visibilitychange",()=>{if(!document.hidden&&token)sync()});setInterval(()=>{if(!document.hidden&&token&&!(document.activeElement&&document.activeElement.tagName=="INPUT"))sync()},20000);if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script></body></html>
