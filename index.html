@@ -170,7 +170,41 @@ function key(){return S.program+"|"+wkx()+"|"+S.day}
 function getLastExData(name){for(let h of S.history){if(h.program!==S.program||wkOf(h)!==wkx())continue;for(let e of h.exercises){if(e.name===name&&e.sets&&e.sets.length>0){let last=[...e.sets].reverse().find(s=>s.weight!==""||s.reps!=="");if(last)return{weight:last.weight,reps:last.reps}}}}return null}
 function draft(){let d0=S.drafts[key()];if(d0&&!d0.some(e=>e.m||e.sets.some(s=>s.done||s.reps!=="")))delete S.drafts[key()];if(!S.drafts[key()]){S.drafts[key()]=parse(P[S.program].days[S.day]).map(e=>{let last=getLastExData(e.name);let dw=last?last.weight:(e.weight||0);let dr=last?last.reps:"";return{name:e.name,group:e.group||"",cardio:!!e.cardio,sets:Array.from({length:e.sets+(wkx()==="heavy"&&!e.cardio?1:0)},()=>({weight:dw,reps:dr,done:false}))}})}save();return S.drafts[key()]}
 const L={A:"А",B:"Б",V:"В",G:"Г"},R="8–12";
-const EXIMG={"Тяга горизонтального блока двумя руками":"two-arm-horizontal-row-circle.png"};
+const EXIMG={
+ "Жим гантелей сидя":"circles/seated-dumbbell-press-circle.png",
+ "Жим штанги лёжа":"circles/barbell-bench-press-circle.png",
+ "Горизонтальная тяга блока":"circles/cable-seated-row-circle.png",
+ "Бабочка":"circles/pec-deck-fly-circle.png",
+ "Румынская тяга":"circles/romanian-deadlift-circle.png",
+ "Тяга горизонтального хамера":"circles/horizontal-hammer-row-circle.png",
+ "Тяга горизонтального хаммера":"circles/horizontal-hammer-row-circle.png",
+ "Махи с гантелями":"circles/dumbbell-lateral-raise-circle.png",
+ "Тяга Т-грифа":"circles/t-bar-row-circle.png",
+ "Сгибание рук со штангой":"circles/barbell-curl-circle.png",
+ "Жим лежа в смите под 30°":"circles/smith-incline-bench-circle.png",
+ "Жим лёжа в Смите":"circles/bench-smith-circle.png",
+ "Разгибание рук из-за головы":"circles/overhead-triceps-extension-circle.png",
+ "Разгибание рук из-за головы в кроссовере":"circles/overhead-cable-triceps-extension-circle.png",
+ "Подтягивание":"circles/pull-ups-circle.png",
+ "Подтягивания":"circles/pull-ups-circle.png",
+ "Сгибание рук с гантелями на наклонной скамье под 60°":"circles/incline-dumbbell-curl-circle.png",
+ "Отведение в Пек-Деке":"circles/rear-delt-pec-deck-circle.png",
+ "Разгибание рук с рукояткой":"circles/cable-triceps-pushdown-handle-circle.png",
+ "Разгибание ног":"circles/leg-extension-circle.png",
+ "Разводка в тренажере бабочка":"circles/machine-chest-fly-circle.png",
+ "Присед в Гакке":"circles/hack-squat-circle.png",
+ "Икры в тренажёре":"circles/calf-machine-circle.png",
+ "Пресс":"circles/abs-circle.png",
+ "Сгибание ног сидя":"circles/seated-leg-curl-circle.png",
+ "Шраги с гантелями":"circles/dumbbell-shrugs-circle.png",
+ "Присед в гакк на ягодицу":"circles/glute-hack-squat-corrected-circle.png",
+ "Тяга горизонтального блока двумя руками":"circles/two-arm-horizontal-row-circle.png",
+ "Жим в Смите 30°":"circles/smith-30-degree-press-circle.png",
+ "Сгибание гантелей":"circles/dumbbell-curl-circle.png",
+ "Икры":"circles/calf-raises-circle.png",
+ "Тяга Hammer одной рукой":"circles/one-arm-hammer-row-circle.png",
+ "Обратная бабочка":"circles/reverse-pec-deck-circle.png"
+};
 const RING='<div class="ring"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg></div>';
 function exerciseIcon(name){
  const n=String(name||'').toLowerCase();
