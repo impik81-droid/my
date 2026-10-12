@@ -1,33 +1,13 @@
-import webpush from "web-push";
-
-const SUBJECT = "mailto:impik81@gmail.com";
-
-async function processDue(env) {
-  if (!env.DB || !env.VAPID_PUBLIC_KEY || !env.VAPID_PRIVATE_KEY) throw new Error("Push Worker secrets/bindings are missing");
-  webpush.setVapidDetails(SUBJECT, env.VAPID_PUBLIC_KEY, env.VAPID_PRIVATE_KEY);
-  const due = await env.DB.prepare("SELECT id,user_id,payload FROM rest_timers WHERE sent=0 AND ends_at<=? ORDER BY ends_at LIMIT 100").bind(Date.now()).all();
-  for (const timer of due.results || []) {
-    const subs = await env.DB.prepare("SELECT endpoint,p256dh,auth FROM push_subscriptions WHERE user_id=?").bind(timer.user_id).all();
-    let delivered = false;
-    for (const sub of subs.results || []) {
-      try {
-        await webpush.sendNotification({endpoint:sub.endpoint,keys:{p256dh:sub.p256dh,auth:sub.auth}}, timer.payload || "{}");
-        delivered = true;
-      } catch (e) {
-        if (e?.statusCode === 404 || e?.statusCode === 410) await env.DB.prepare("DELETE FROM push_subscriptions WHERE endpoint=?").bind(sub.endpoint).run();
-      }
-    }
-    await env.DB.prepare("UPDATE rest_timers SET sent=1 WHERE id=?").bind(timer.id).run();
-    if (!delivered) console.log("No active Push subscription for timer", timer.id);
-  }
-}
-
-export default {
-  async fetch(request, env) {
-    if (new URL(request.url).pathname === "/health") return new Response("ok");
-    return new Response("Workout Push Worker", {status:200});
-  },
-  async scheduled(_event, env, ctx) {
-    ctx.waitUntil(processDue(env));
-  }
-};
+const te=new TextEncoder();
+const b64u=b=>{let s="";for(const x of b)s+=String.fromCharCode(x);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"")};
+const unb64=s=>{s=s.replace(/-/g,"+").replace(/_/g,"/");s+="=".repeat((4-s.length%4)%4);const x=atob(s);return Uint8Array.from(x,c=>c.charCodeAt(0))};
+const cat=(...xs)=>{const n=xs.reduce((a,x)=>a+x.length,0),o=new Uint8Array(n);let p=0;for(const x of xs){o.set(x,p);p+=x.length}return o};
+async function hmac(key,data){const k=await crypto.subtle.importKey("raw",key,{name:"HMAC",hash:"SHA-256"},false,["sign"]);return new Uint8Array(await crypto.subtle.sign("HMAC",k,data))}
+async function hkdf(ikm,salt,info,n){const k=await crypto.subtle.importKey("raw",ikm,"HKDF",false,["deriveBits"]);return new Uint8Array(await crypto.subtle.deriveBits({name:"HKDF",hash:"SHA-256",salt,info},k,n*8))}
+function u32(n){return new Uint8Array([(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255])}
+async function encrypt(sub,payload){const client=unb64(sub.p256dh),auth=unb64(sub.auth);const eph=await crypto.subtle.generateKey({name:"ECDH",namedCurve:"P-256"},true,["deriveBits"]);const server=await crypto.subtle.exportKey("raw",eph.publicKey);const cp=await crypto.subtle.importKey("raw",client,{name:"ECDH",namedCurve:"P-256"},false,[]);const shared=new Uint8Array(await crypto.subtle.deriveBits({name:"ECDH",public:cp},eph.privateKey,256));const authInfo=te.encode("WebPush: info\0");const prk0=await hmac(auth,shared);const ikm=await hkdf(prk0,new Uint8Array(0),cat(authInfo,client,server),32);const salt=crypto.getRandomValues(new Uint8Array(16));const prk=await hmac(salt,ikm);const cek=await hkdf(prk,new Uint8Array(0),te.encode("Content-Encoding: aes128gcm\0"),16);const nonce=await hkdf(prk,new Uint8Array(0),te.encode("Content-Encoding: nonce\0"),12);const aes=await crypto.subtle.importKey("raw",cek,{name:"AES-GCM"},false,["encrypt"]);const plain=cat(te.encode(payload),new Uint8Array([2]));const cipher=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv:nonce},aes,plain));return cat(salt,u32(4096),new Uint8Array([server.length]),server,cipher)}
+function jwtPart(o){return b64u(te.encode(JSON.stringify(o)))}
+async function vapid(env,audience){const pub=unb64(env.VAPID_PUBLIC_KEY),priv=unb64(env.VAPID_PRIVATE_KEY),jwk={kty:"EC",crv:"P-256",x:b64u(pub.slice(1,33)),y:b64u(pub.slice(33,65)),d:b64u(priv),ext:true};const key=await crypto.subtle.importKey("jwk",jwk,{name:"ECDSA",namedCurve:"P-256"},false,["sign"]);const h=jwtPart({typ:"JWT",alg:"ES256"}),p=jwtPart({aud:audience,exp:Math.floor(Date.now()/1000)+43200,sub:"mailto:impik81@gmail.com"});const sig=new Uint8Array(await crypto.subtle.sign({name:"ECDSA",hash:"SHA-256"},key,te.encode(h+"."+p)));return h+"."+p+"."+b64u(sig)}
+async function send(sub,payload,env){const u=new URL(sub.endpoint),body=await encrypt(sub,JSON.stringify(payload));const token=await vapid(env,u.origin);return fetch(sub.endpoint,{method:"POST",headers:{Authorization:`vapid t=${token}, k=${env.VAPID_PUBLIC_KEY}`,TTL:"86400",Urgency:"high","Content-Type":"application/octet-stream","Content-Encoding":"aes128gcm"},body})}
+async function due(env){const q=await env.DB.prepare("SELECT id,user_id,payload FROM rest_timers WHERE sent=0 AND ends_at<=? ORDER BY ends_at LIMIT 100").bind(Date.now()).all();for(const t of q.results||[]){const ss=await env.DB.prepare("SELECT endpoint,p256dh,auth FROM push_subscriptions WHERE user_id=?").bind(t.user_id).all();for(const s of ss.results||[]){try{const r=await send(s,JSON.parse(t.payload||"{}"),env);if(r.status===404||r.status===410)await env.DB.prepare("DELETE FROM push_subscriptions WHERE endpoint=?").bind(s.endpoint).run()}catch(e){console.log("push failed",e.message)}}await env.DB.prepare("UPDATE rest_timers SET sent=1 WHERE id=?").bind(t.id).run()}}
+export default{async fetch(){return new Response("Workout Push Worker")},async scheduled(_e,env,ctx){ctx.waitUntil(due(env))}};
