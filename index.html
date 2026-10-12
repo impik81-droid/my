@@ -393,8 +393,9 @@ async function finish(){
   let exercises = d.filter(e => !e.cardio).map(e => ({
     name: e.name,
     group: e.group, note: e.note||"",
-    sets: e.sets.map(s => ({...s}))
-  }));
+    sets: e.sets.filter(s => s.done).map(s => ({...s}))
+  })).filter(e => e.sets.length);
+  if(!exercises.length){toast("Отметьте галочкой хотя бы один подход");return}
 
   S.history = S.history.filter(x => {
     let xDate = new Date(x.date);
