@@ -323,7 +323,8 @@ function pick(i,m){let L0=m=="e"?ED:draft(),cur=L0[i].name,used=new Set(L0.map(e
 function closeSh(){PK=null;document.getElementById("sheet").classList.add("hidden")}
 function choose(k){setName(PK.list[k])}
 function own(){let n=(prompt("Название упражнения:")||"").trim();if(n)setName(n);else closeSh()}
-function setName(n){let {i,m}=PK;if(m=="e")ED[i].name=n;else{let e=draft()[i],l=getLastExData(n);e.name=n;e.m=1;e.sets.forEach(x=>{x.weight=l?l.weight:0;x.reps=l?l.reps:"";x.done=false})}touch();closeSh();render()}
+function renameProgramExercise(i,n){let day=P[S.program].days[S.day],idx=0;for(let r of day){let start=r[0]&&String(r[0]).startsWith("SS")?1:0;for(let j=start;j<r.length;j+=4){if(!r[j])continue;if(idx===i){r[j]=n;S.progs=S.progs||{};S.progs[S.program]={...P[S.program]};return}idx++}}}
+function setName(n){let {i,m}=PK;if(m=="e")ED[i].name=n;else{let e=draft()[i],l=getLastExData(n);e.name=n;e.m=1;e.sets.forEach(x=>{x.weight=l?l.weight:0;x.reps=l?l.reps:"";x.done=false});renameProgramExercise(i,n)}touch();closeSh();render()}
 function fillProg(){let b=document.getElementById("programLauncher");if(b)b.innerHTML=`${esc(S.program)}<small>Программа · ${Object.keys(P).length} доступно</small>`}
 function openPrograms(){selectingProgram=true;render()}
 function chooseProgram(name){S.program=name;S.day=Object.keys(P[name].days)[0];S.page="workout";localStorage.setItem(programKey(),name);selectingProgram=false;save();if(token)push();render()}
