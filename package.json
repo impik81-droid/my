@@ -1,0 +1,24 @@
+{
+  "name": "repo-my",
+  "version": "1.0.0",
+  "description": "## Файлы - `index.html` — приложение - `functions/api/auth.js` — регистрация/вход - `functions/api/data.js` — облачные данные - `schema.sql` — D1",
+  "main": "sw.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/impik81-droid/my.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/impik81-droid/my/issues"
+  },
+  "homepage": "https://github.com/impik81-droid/my#readme",
+  "dependencies": {
+    "esbuild": "^0.28.2",
+    "web-push": "^3.6.7"
+  }
+}
