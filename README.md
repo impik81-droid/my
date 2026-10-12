@@ -1,4 +1,4 @@
-# Workout Diary — Cloudflare
+# Моя тренировка — Cloudflare
 
 ## Файлы
 - `index.html` — приложение

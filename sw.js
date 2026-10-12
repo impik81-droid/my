@@ -1,5 +1,5 @@
-const C="wd16";
-const OLD=["wd1","wd2","wd3","wd4","wd5","wd6","wd7","wd8","wd9","wd10","wd11","wd12","wd13","wd14","wd15"];
+const C="wd17";
+const OLD=["wd1","wd2","wd3","wd4","wd5","wd6","wd7","wd8","wd9","wd10","wd11","wd12","wd13","wd14","wd15","wd16"];
 self.addEventListener("install",e=>{
   e.waitUntil(caches.open(C).then(c=>c.addAll(["./","index.html"])).then(()=>self.skipWaiting()));
 });
@@ -21,7 +21,7 @@ self.addEventListener("fetch",e=>{
   );
 });
 self.addEventListener("push",e=>{
-  let data={title:"Workout Diary",body:"Время отдыха закончилось",url:"/"};
+  let data={title:"Моя тренировка",body:"Время отдыха закончилось",url:"/"};
   try{data={...data,...(e.data?e.data.json():{})}}catch(_){if(e.data)data.body=e.data.text()}
   e.waitUntil(self.registration.showNotification(data.title,{body:data.body,icon:"./icon-192.png",badge:"./icon-192.png",tag:data.tag||"workout",renotify:true,silent:false,requireInteraction:true,data:{url:data.url}}));
 });
