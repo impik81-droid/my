@@ -1,5 +1,5 @@
-const C="wd17";
-const OLD=["wd1","wd2","wd3","wd4","wd5","wd6","wd7","wd8","wd9","wd10","wd11","wd12","wd13","wd14","wd15","wd16"];
+const C="wd18";
+const OLD=["wd1","wd2","wd3","wd4","wd5","wd6","wd7","wd8","wd9","wd10","wd11","wd12","wd13","wd14","wd15","wd16","wd17"];
 self.addEventListener("install",e=>{
   e.waitUntil(caches.open(C).then(c=>c.addAll(["./","index.html"])).then(()=>self.skipWaiting()));
 });
