@@ -174,6 +174,7 @@ const L={A:"А",B:"Б",V:"В",G:"Г"},R="8–12";
 const EXIMG={
  "Жим гантелей сидя":"circles/seated-dumbbell-press-circle.png",
  "Жим штанги лёжа":"circles/barbell-bench-press-circle.png",
+ "Жим в Хаммере на грудь":"circles/hammer-chest-press-circle.png",
  "Горизонтальная тяга блока":"circles/cable-seated-row-circle.png",
  "Бабочка":"circles/pec-deck-fly-circle.png",
  "Румынская тяга":"circles/romanian-deadlift-circle.png",
@@ -305,7 +306,7 @@ function touch(){(S.dts=S.dts||{})[key()]=Date.now();save();pushSoon()}
 function markDraftsChanged(){let now=Date.now(),prefix=S.program+"|",suffix="|"+S.day;S.dts=S.dts||{};for(let k of Object.keys(S.drafts||{}))if(k.startsWith(prefix)&&k.endsWith(suffix))S.dts[k]=now;S.dts[key()]=now;save();pushSoon()}
 const ALT={
 cardio:["Кардио: Ходьба на дорожке","Кардио: Эллипс","Кардио: Велотренажёр","Кардио: Гребной тренажёр","Кардио: Степпер"],
-chest:["Жим лёжа со штангой","Жим лёжа в Смите","Жим в Смите 30°","Жим гантелей лёжа","Жим гантелей на наклонной скамье","Жим в тренажёре сидя","Отжимания на брусьях"],
+chest:["Жим лёжа со штангой","Жим лёжа в Смите","Жим в Смите 30°","Жим гантелей лёжа","Жим гантелей на наклонной скамье","Жим в тренажёре сидя","Жим в Хаммере на грудь","Отжимания на брусьях"],
 fly:["Бабочка","Разводка гантелей лёжа","Сведение рук в кроссовере","Сведение на блоках снизу вверх"],
 sh:["Жим гантелей сидя","Жим в Смите сидя","Жим в тренажёре на плечи","Жим Арнольда"],
 lat:["Махи с гантелями","Махи на нижнем блоке","Махи в тренажёре","Махи в наклоне на скамье"],
