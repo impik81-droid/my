@@ -100,7 +100,7 @@ button.danger{background:#2a1418;color:#ffb6bd}
 .note{width:100%;margin-top:8px;font-size:13px}
 .pr{font-size:10px;font-weight:800;color:#000;background:var(--accent);border-radius:6px;padding:1px 6px;white-space:nowrap}
 .big{font:800 22px var(--h);display:block}
-.er{display:flex;gap:6px;align-items:flex-end;margin-top:8px}.er label{flex:1;font-size:11px}.er input{padding:8px;text-align:center}.er button{padding:10px}
+.er{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;align-items:end;margin-top:8px;width:100%;min-width:0}.er label{min-width:0;font-size:11px}.er input{display:block;width:100%;min-width:0;padding:8px;text-align:center}.er button{padding:10px}.ed-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;min-width:0}.ed-tools button{min-width:0!important;width:100%}
 .edbtn{width:100%;margin-top:8px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
 .sheetbg{position:fixed;inset:0;z-index:9;background:rgba(0,0,0,.6);display:flex;align-items:flex-end}
 .sh{width:100%;max-width:760px;margin:auto;background:var(--card);border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:80vh;overflow:auto}
