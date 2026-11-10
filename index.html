@@ -171,6 +171,24 @@ function fixDrafts(){if(S.v!==5){S.drafts={};S.v=5;save()}let ch=0;S.dts=S.dts||
 const save=()=>{localStorage.setItem(K,JSON.stringify(S));if(userEmail)localStorage.setItem(accountStorageKey(userEmail),JSON.stringify(S))}; const esc=x=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const exerciseId=n=>{let x=String(n||"").toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g,"").replace(/ё/g,"е").replace(/[^a-zа-я0-9]+/g,"_").replace(/^_|_$/g,"");return x||"exercise"};
 const sameExercise=(a,b)=>{let ai=typeof a==="object"?(a.eid||exerciseId(a.name)):exerciseId(a),bi=typeof b==="object"?(b.eid||exerciseId(b.name)):exerciseId(b);return ai&&bi?ai===bi:String(typeof a==="object"?a.name:a)===String(typeof b==="object"?b.name:b)};
+const VIDEO_ALIAS_GROUPS=[
+["Тяга горизонтального блока","Тяга горизонтального блока двумя руками","Тяга горизонтальная параллельным хв.","Горизонтальная тяга блока","Горизонтальная тяга двумя руками","Тяга блока к поясу"],
+["Тяга горизонтального Хаммера к груди","Горизонтальная тяга Hammer","Тяга горизонтального хамера","Тяга горизонтального хаммера"],
+["Жим в Смите под 30°","Жим в Смите 30°","Жим лежа в смите под 30°","Жим штанги на наклонной скамье в Смите"],
+["Бабочка в тренажёре","Бабочка","Тренажёр бабочка","Разводка в тренажере бабочка","Сведение рук в тренажере бабочка"],
+["Махи с гантелями в стороны","Махи с гантелями","Отведение гантелей в стороны","Отведение гантелей в стороны стоя"],
+["Обратная бабочка на заднюю дельту","Обратная бабочка","Отведение в Пек-Деке","Отведение в Пек- Деке","Пек-дек на заднюю дельту в бабочке"],
+["Сгибание рук со штангой стоя","Сгибание рук со штангой","Сгибание штанги стоя"],
+["Молотки с гантелями","Молотки с гантелями","Сгибание рук с гантелями стоя (Молот)"],
+["Сгибание рук на скамье Скотта","Скамья Скотта","Сгибание рук в скамье Скотта"],
+["Разгибание рук на блоке","Разгибание в блоке","Разгибание рук с рукояткой","Разгибание рук с прям. рукояткой","Разгибание рук в кроссовере с V-рукояткой","Разгибание рук в кроссовере с v рукояткой"],
+["Болгарские сплит-приседы","Выпады болгарские коленодомин."],
+["Присед в Гакке","Гак-присед","Хак-присед"],
+["Подтягивания","Подтягивание"],
+["Сгибание ног сидя/лежа","Сгибание ног сидя или лежа","Сгибание ног Сидя/лежа"],
+["Жим в тренажёре сидя","Жим на грудь в тренажере"],
+];
+const videoExerciseId=n=>{let id=exerciseId(n);for(const group of VIDEO_ALIAS_GROUPS){const ids=group.map(exerciseId);if(ids.includes(id))return ids[0]}return id};
 function parse(a){let o=[];for(let r of a){if(r[0].startsWith("SS")||r.length>4){let g=r[0].startsWith("SS")?r[0]:"";let st=g?1:0;for(let i=st;i<r.length;i+=4)if(r[i])o.push({group:g,name:r[i],sets:r[i+1]||1,weight:r[i+2]??0})}else o.push({group:"",name:r[0],sets:r[1]||1,weight:r[2]||0,cardio:String(r[0]).startsWith("Кардио")})}return o}
 const wkx=()=>P[S.program].noWeek?"fixed":S.week;
 function key(){return S.program+"|"+wkx()+"|"+S.day}
@@ -399,7 +417,7 @@ function renderW(){let d=draft(),days=Object.keys(P[S.program].days),h=dn(),last
 document.getElementById("dayseg").innerHTML=days.map(x=>`<button class="${x==S.day?"active":""}" onclick="day('${x}')">${L[x]||x}</button>`).join("");
 d.forEach((e,i)=>{if(e.cardio){if(prev!="c")h+='<div class="sec">Кардио</div>';h+=`<div class="ex"><div class="row">${RING}<div><div class="nm">${esc(e.name.replace(/^Кардио:\s*/,""))}</div><div class="sb">${esc(e.sets[0].weight)} минут</div></div></div></div>`;prev="c";return}
 if(e.group&&e.group!=last)h+=`<div class="ss">${ICO}Суперсет ${esc(e.group.replace("SS",""))}</div>`;last=e.group||"";prev="e";
- h+=`<div class="ex"><div class="row">${EXIMG[e.name]?`<img class="ex-thumb" src="${esc(EXIMG[e.name])}" alt="${esc(e.name)}">`:exerciseIcon(e.name)}<div><div class="nm">${esc(e.name)}</div><div class="sb">${e.sets.length-(P[S.program].warm?1:0)} × ${repsOf(e.name)} повторений <em>${esc(e.sets[0].weight)} кг</em></div>${hint(e.name)}${TECH[exerciseId(e.name)]?`<button class="techbtn" onclick="openTechnique('${esc(TECH[exerciseId(e.name)].url)}','${esc(e.name)}')">▶ Техника</button>`:""}</div></div><div class="sets"><span>№</span><span>Вес, кг</span><span>Повт.</span><span>✓</span>`;
+ h+=`<div class="ex"><div class="row">${EXIMG[e.name]?`<img class="ex-thumb" src="${esc(EXIMG[e.name])}" alt="${esc(e.name)}">`:exerciseIcon(e.name)}<div><div class="nm">${esc(e.name)}</div><div class="sb">${e.sets.length-(P[S.program].warm?1:0)} × ${repsOf(e.name)} повторений <em>${esc(e.sets[0].weight)} кг</em></div>${hint(e.name)}${TECH[videoExerciseId(e.name)]?`<button class="techbtn" onclick="openTechnique('${esc(TECH[videoExerciseId(e.name)].url)}','${esc(e.name)}')">▶ Техника</button>`:""}</div></div><div class="sets"><span>№</span><span>Вес, кг</span><span>Повт.</span><span>✓</span>`;
 e.sets.forEach((s,j)=>h+=`<span>${P[S.program].warm?(j?j:"Р"):j+1}</span><input value="${esc(s.weight)}" type="number" step=".5" inputmode="decimal" onchange="up(${i},${j},'weight',this.value)"><input value="${esc(s.reps)}" type="number" inputmode="numeric" onchange="up(${i},${j},'reps',this.value)"><button class="check ${s.done?"on":""}" onclick="tg(${i},${j})">${s.done?"✓":"○"}</button>`);h+=`</div><div class="ctr"><button onclick="addSet(${i})">+ подход</button><button onclick="delSet(${i})">− подход</button><button onclick="ren(${i})">Заменить</button></div><input class="note" placeholder="Заметка" value="${esc(e.note||"")}" onchange="note(${i},this.value)"></div>`});
 h+='<button class="edbtn" onclick="openEd()">Редактировать день</button>';h+=`<button class="fab" onclick="finish()">Сохранить день ${L[S.day]||S.day}</button>`;document.getElementById("workout").innerHTML=h}
 
@@ -417,7 +435,7 @@ function up(i, j, k, v) {
   touch();
   renderW();
 }function tg(i,j){let s=draft()[i].sets[j];s.done=!s.done;touch();renderW()}function day(x){S.day=x;save();if(token)pushSoon(0);render()}
-async function loadVideos(){try{let a=await fetch("/api/videos");if(!a.ok)return;let xs=await a.json();TECH={};xs.forEach(v=>{TECH[exerciseId(v.exercise)]=v});renderW()}catch(_){}}
+async function loadVideos(){try{let a=await fetch("/api/videos");if(!a.ok)return;let xs=await a.json();TECH={};xs.forEach(v=>{TECH[videoExerciseId(v.exercise)]=v});renderW()}catch(_){}}
 function openTechnique(url,title){let el=document.getElementById("sheet");el.innerHTML=`<div class="sh"><b>${esc(title)}</b><div class="hsub" style="margin:6px 0 12px">Техника выполнения</div><video controls playsinline preload="metadata" style="width:100%;border-radius:14px;background:#000" src="${esc(url)}"></video><button class="alt" onclick="closeSh()">Закрыть</button></div>`;el.classList.remove("hidden")}
 async function api(url,opt={}){opt.headers={...(opt.headers||{}),...(token?{Authorization:"Bearer "+token}:{})};let r;try{r=await fetch(url,opt)}catch(e){throw new Error("нет связи с сервером (открой сайт по адресу pages.dev)")}if(r.status===401&&token){token="";localStorage.removeItem("wd_token")}if(!r.ok){let tx="";try{tx=(await r.text()).slice(0,200)}catch(e){}let m=tx;try{m=JSON.parse(tx).error||tx}catch(e){}throw new Error("["+r.status+"] "+(m||r.statusText||"пустой ответ"))}return r.json()}
 async function sync(){if(!token)return;try{let x=await api("/api/data");if(x.data){let c=JSON.parse(x.data);S.draftDate={...(c.draftDate||{}),...(S.draftDate||{})};S.del=S.del||{};let cdl=c.del||{};for(let k in cdl)S.del[k]=Math.max(S.del[k]||0,cdl[k]);let lim=Date.now()-180*864e5;for(let k in S.del)if(S.del[k]<lim)delete S.del[k];S.history=merge(S.history,c.history||[]);S.progs={...(c.progs||{}),...(S.progs||{})};Object.assign(P,S.progs);if(c.program&&P[c.program]){S.program=c.program;if(c.day&&P[S.program].days[c.day])S.day=c.day}fillProg();fixDrafts();S.dts=S.dts||{};Object.keys(S.drafts).forEach(k=>{if(!S.dts[k]&&S.drafts[k].some(e=>e.sets.some(x=>x.done||x.reps!=="")))S.dts[k]=Date.now()});let cd=c.drafts||{},ct=c.dts||{};for(let k of new Set([...Object.keys(cd),...Object.keys(ct)]))if((ct[k]||0)>(S.dts[k]||0)){if(cd[k])S.drafts[k]=cd[k];else delete S.drafts[k];S.dts[k]=ct[k]}
