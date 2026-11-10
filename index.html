@@ -541,6 +541,8 @@ function progPage() {
   if (!S.progDay || !days.includes(S.progDay)) S.progDay = days[0];
   let exercises = getExercisesForDay(S.progDay);
   if (!S.progEx || !exercises.includes(S.progEx)) S.progEx = exercises[0] || "";
+  if (P[S.program].noWeek) S.progWeek = "all";
+  if (!P[S.program].noWeek && !["heavy","light","all"].includes(S.progWeek)) S.progWeek = S.week === "light" ? "light" : "heavy";
 
   let namesMap = P[S.program].names || {};
   let h = `<div class="sec" style="margin-top:0">Прогресс</div>`;
@@ -551,6 +553,13 @@ function progPage() {
     h += `<button style="flex:1;min-width:130px;padding:10px;font-size:13px;background:${d===S.progDay?'var(--accent)':'var(--card2)'};color:${d===S.progDay?'#000':'var(--text)'};font-weight:${d===S.progDay?'700':'500'}" onclick="S.progDay='${d}';S.progEx='';render()">${esc(title)}</button>`;
   });
   h += `</div></div>`;
+
+  if (!P[S.program].noWeek) {
+    const weekButtons = [["heavy","Тяжёлая"],["light","Лёгкая"],["all","Все недели"]];
+    h += `<div class="card" style="padding:10px"><div class="hsub" style="margin-bottom:8px">Неделя для графика</div><div style="display:flex;gap:6px;flex-wrap:wrap">`;
+    weekButtons.forEach(([key,label]) => h += `<button style="flex:1;min-width:100px;padding:10px;font-size:13px;background:${S.progWeek===key?'var(--accent)':'var(--card2)'};color:${S.progWeek===key?'#000':'var(--text)'};font-weight:${S.progWeek===key?'700':'500'}" onclick="S.progWeek='${key}';save();render()">${label}</button>`);
+    h += `</div><div class="hsub" style="margin-top:8px">Тяжёлая и лёгкая недели считаются отдельно.</div></div>`;
+  }
 
   if (!exercises.length) {
     return h + `<div class="empty">В этот день нет силовых упражнений</div>`;
@@ -564,7 +573,8 @@ function progPage() {
 
   let points = [];
   [...S.history].reverse().forEach(hItem => {
-    let ex = hItem.program===S.program ? hItem.exercises.find(e => sameExercise(e,S.progEx)) : null;
+    let matchesWeek = P[S.program].noWeek || S.progWeek === "all" || hItem.week === S.progWeek;
+    let ex = hItem.program===S.program && matchesWeek ? hItem.exercises.find(e => sameExercise(e,S.progEx)) : null;
     if (ex) {
       let maxW = 0;
       ex.sets.forEach(s => { let w = parseFloat(s.weight)||0; if (w > maxW) maxW = w; });
@@ -606,7 +616,8 @@ function progPage() {
     gridLines += `<line x1="30" y1="${gy}" x2="${width - 10}" y2="${gy}" stroke="var(--line)" stroke-dasharray="3,3"/><text x="25" y="${gy+3}" font-size="9" fill="var(--muted)" text-anchor="end">${val}</text>`;
   }
 
-  h += `<div class="card"><div class="chart-title"><span><span style="display:inline-block;width:10px;height:10px;background:var(--accent);border-radius:50%;margin-right:6px"></span>Лучший вес, кг</span></div><svg class="chart-svg" viewBox="0 0 ${width} ${height}">${gridLines}<polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="${pts.trim()}"/>${circ}${axisLabels}</svg></div>`;
+  const weekLabel = P[S.program].noWeek ? "" : ` · ${S.progWeek==="heavy"?"тяжёлая":S.progWeek==="light"?"лёгкая":"все"}`;
+  h += `<div class="card"><div class="chart-title"><span><span style="display:inline-block;width:10px;height:10px;background:var(--accent);border-radius:50%;margin-right:6px"></span>Лучший вес, кг${weekLabel}</span></div><svg class="chart-svg" viewBox="0 0 ${width} ${height}">${gridLines}<polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="${pts.trim()}"/>${circ}${axisLabels}</svg></div>`;
 
   h += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
     <div class="card" style="text-align:center;padding:12px 6px;margin:0"><b style="font-size:18px;color:var(--accent)">${curW} кг</b><div class="hsub" style="margin-top:2px">Текущий рабочий</div></div>
