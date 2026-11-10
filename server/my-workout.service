@@ -9,6 +9,8 @@ ExecStart=/usr/bin/node /var/www/workout-copy/server/server.mjs
 Environment=NODE_ENV=production
 Environment=PORT=3000
 Environment=DB_PATH=/var/lib/my-workout/workout.json
+Environment=VIDEO_DIR=/var/www/workout-copy/videos
+Environment=VIDEO_META=/var/lib/my-workout/videos.json
 EnvironmentFile=-/etc/my-workout.env
 Restart=always
 RestartSec=3
