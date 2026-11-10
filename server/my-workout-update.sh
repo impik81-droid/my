@@ -7,7 +7,8 @@ BRANCH=main
 cd "$REPO"
 
 # Do not overwrite manual server-side edits.
-if [[ -n "$(git status --porcelain)" ]]; then
+CHANGES=$(git status --porcelain | grep -vE "^\?\? videos(/|$)" || true)
+if [[ -n "$CHANGES" ]]; then
   echo "my-workout-update: working tree is not clean; skipping update"
   exit 0
 fi
