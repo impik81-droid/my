@@ -47,8 +47,8 @@ server {
 }
 
 server {
-    listen 443 ssl;
-    listen [::]:443 ssl;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
     server_name www.impik81.online;
     ssl_certificate /etc/ssl/impik81.online/fullchain.pem;
     ssl_certificate_key /etc/ssl/impik81.online/privkey.pem;
@@ -56,9 +56,11 @@ server {
 }
 
 server {
-    listen 443 ssl;
-    listen [::]:443 ssl;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
     server_name impik81.online;
+    ssl_protocols TLSv1.2;
+    ssl_prefer_server_ciphers on;
     root /var/www/workout-copy;
     index index.html;
     ssl_certificate /etc/ssl/impik81.online/fullchain.pem;

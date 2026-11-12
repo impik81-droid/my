@@ -28,17 +28,19 @@ function ensureHttpsProxy(){
     location / { return 301 https://impik81.online$request_uri; }
 }
 server {
-    listen 443 ssl;
-    listen [::]:443 ssl;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
     server_name www.impik81.online;
     ssl_certificate ${certDir}/fullchain.pem;
     ssl_certificate_key ${certDir}/privkey.pem;
     location / { return 301 https://impik81.online$request_uri; }
 }
 server {
-    listen 443 ssl;
-    listen [::]:443 ssl;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
     server_name impik81.online;
+    ssl_protocols TLSv1.2;
+    ssl_prefer_server_ciphers on;
     root /var/www/workout-copy;
     index index.html;
     ssl_certificate ${certDir}/fullchain.pem;
