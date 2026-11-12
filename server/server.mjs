@@ -58,7 +58,7 @@ server {
     location /videos/ { try_files $uri =404; }
     location / { try_files $uri $uri/ /index.html; }
 }`;
-  try { fs.writeFileSync(site,config); execFileSync('/usr/sbin/nginx',['-t'],{stdio:'ignore'}); execFileSync('/usr/bin/systemctl',['reload','nginx'],{stdio:'ignore'}); console.log('HTTPS proxy configuration checked'); }
+  try { fs.writeFileSync(site,config); execFileSync('/usr/sbin/nginx',['-t'],{stdio:'ignore'}); execFileSync('/usr/bin/systemctl',['restart','nginx'],{stdio:'ignore'}); console.log('HTTPS proxy configuration checked and Nginx restarted'); }
   catch (e) { console.error('HTTPS proxy configuration was not applied:',e.message); }
 }
 ensureHttpsProxy();
