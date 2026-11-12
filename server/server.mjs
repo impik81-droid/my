@@ -2,6 +2,7 @@ import http from 'node:http';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const PORT = Number(process.env.PORT || 3000);
 const DB_PATH = process.env.DB_PATH || '/var/lib/my-workout/workout.json';
@@ -14,6 +15,53 @@ fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 fs.mkdirSync(VIDEO_DIR, { recursive: true });
 if (!fs.existsSync(DB_PATH)) fs.writeFileSync(DB_PATH, JSON.stringify({users:[],data:[]}, null, 2));
 if (!fs.existsSync(VIDEO_META)) fs.writeFileSync(VIDEO_META, '[]');
+function ensureHttpsProxy(){
+  const certDir='/etc/ssl/impik81.online';
+  const site='/etc/nginx/sites-enabled/workout-copy';
+  if (process.getuid?.()!==0 || !fs.existsSync(`${certDir}/fullchain.pem`) || !fs.existsSync(`${certDir}/privkey.pem`) || !fs.existsSync('/etc/nginx')) return;
+  const config=`server {
+    listen 80;
+    listen [::]:80;
+    server_name impik81.online www.impik81.online;
+    root /var/www/workout-copy;
+    location /.well-known/acme-challenge/ { try_files $uri =404; }
+    location / { return 301 https://impik81.online$request_uri; }
+}
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name www.impik81.online;
+    ssl_certificate ${certDir}/fullchain.pem;
+    ssl_certificate_key ${certDir}/privkey.pem;
+    location / { return 301 https://impik81.online$request_uri; }
+}
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name impik81.online;
+    root /var/www/workout-copy;
+    index index.html;
+    ssl_certificate ${certDir}/fullchain.pem;
+    ssl_certificate_key ${certDir}/privkey.pem;
+    client_max_body_size 125M;
+    location /.well-known/acme-challenge/ { try_files $uri =404; }
+    location /api/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_request_buffering off;
+        proxy_read_timeout 180s;
+    }
+    location /videos/ { try_files $uri =404; }
+    location / { try_files $uri $uri/ /index.html; }
+}`;
+  try { fs.writeFileSync(site,config); execFileSync('/usr/sbin/nginx',['-t'],{stdio:'ignore'}); execFileSync('/usr/bin/systemctl',['reload','nginx'],{stdio:'ignore'}); console.log('HTTPS proxy configuration checked'); }
+  catch (e) { console.error('HTTPS proxy configuration was not applied:',e.message); }
+}
+ensureHttpsProxy();
 const load = () => JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
 const save = db => { const tmp=DB_PATH+'.tmp'; fs.writeFileSync(tmp, JSON.stringify(db)); fs.renameSync(tmp, DB_PATH); };
 const videos = () => JSON.parse(fs.readFileSync(VIDEO_META, 'utf8'));
