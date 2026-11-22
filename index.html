@@ -422,6 +422,7 @@ if(!S.builderOpen){h+=`<div class="builder-current">Упражнения дня 
 function openExercise(i){S.activeEx=i;save();renderW()}
 function closeExercise(){S.activeEx=null;save();renderW()}
 function openExerciseHistory(i){S.progEx=(draft()[i]||{}).name||"";S.page="history";save();render()}
+function returnFromExerciseHistory(){S.page="workout";save();render()}
 function renderNewSetRows(i,e){let h='<div class="set-row"><span class="set-label">№</span><span class="set-label">ВЕС, КГ</span><span class="set-label">ПОВТ.</span><span class="set-label">✓</span></div>';e.sets.forEach((s,j)=>{h+=`<div class="set-row"><span class="set-label">${j+1}</span><input value="${esc(s.weight)}" type="text" inputmode="decimal" onfocus="this.setSelectionRange(this.value.length,this.value.length)" onchange="up(${i},${j},'weight',this.value)"><input value="${esc(s.reps)}" type="text" inputmode="numeric" onfocus="this.setSelectionRange(this.value.length,this.value.length)" onchange="up(${i},${j},'reps',this.value)"><button class="check ${s.done?"on":""}" onclick="tg(${i},${j})">${s.done?"✓":"○"}</button></div>`});return h}
 function renderW(){let d=draft(),days=Object.keys(P[S.program].days||{}),dayName=(P[S.program].names||{})[S.day]||`День ${L[S.day]||S.day}`;
  if(S.activeEx!=null&&d[S.activeEx]){let i=S.activeEx,e=d[i],img=EXIMG[e.name]?`<img class="new-avatar" src="${esc(EXIMG[e.name])}" alt="${esc(e.name)}">`:`<div class="new-avatar">${e.cardio?"◷":""}</div>`;let h=`<div class="new-detail"><div class="new-detail-head"><button class="new-back" onclick="closeExercise()">‹</button><h2>Упражнение</h2><span style="width:42px"></span></div><section class="new-hero">${img}<h2>${esc(e.name)}</h2><p>${e.cardio?"Кардио · выносливость":"Тренировка · "+esc(dayName)}</p></section>`;
@@ -491,15 +492,19 @@ async function finish(){
 }
 
 function hist(){
-  let f=S.histDate||null;
-  let h='<div class="hh"><b>История</b><span style="display:flex;gap:6px">';
+  let f=S.histDate||null,exFilter=S.progEx||null;
+  let h=`<div class="hh"><b>${exFilter?"История упражнения":"История"}</b><span style="display:flex;gap:6px">`;
+  if(exFilter)h+=`<button onclick="returnFromExerciseHistory()">← К тренировке</button>`;
   if(f){let fd=new Date(f);h+=`<button onclick="clearDate()">✕ ${fd.toLocaleDateString("ru-RU",{day:"numeric",month:"long"})}</button>`}
   h+='<button onclick="exp()" aria-label="Экспорт">⬇</button><button onclick="document.getElementById(\'imp\').click()" aria-label="Импорт">⬆</button></span></div><input id="imp" type="file" accept=".json" class="hidden" onchange="imp(this)">';
+  if(exFilter)h+=`<div class="status" style="margin-bottom:14px">${esc(exFilter)}</div>`;
   const DC={A:"#f5a623",B:"#4f8cff",V:"#ff5d9e",G:"#8b7bff"},TR='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg>';
   let any=false;
   S.history.forEach((x,i)=>{
     let kd=lk(new Date(x.date));
     if(f&&kd!==f)return;if(x.program!==S.program)return;
+    let visibleExercises=exFilter?(x.exercises||[]).filter(e=>sameExercise(e,exFilter)):(x.exercises||[]);
+    if(!visibleExercises.length)return;
     any=true;
     let dt=new Date(x.date),ds=isNaN(dt)?esc(x.dateText):dt.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
     let wtag=(P[x.program]||{}).noWeek?"":x.week==="light"?'<span class="wt light">ЛЁГ</span>':'<span class="wt heavy">ТЯЖ</span>';
@@ -514,7 +519,7 @@ function hist(){
           <button class="htrash" aria-label="Удалить" onclick="if(confirm('Удалить тренировку?'))delH(${i})">${TR}</button>
         </div>
       </div><div id="chart-container-${i}"></div>`;
-    x.exercises.forEach(e=>{
+    visibleExercises.forEach(e=>{
       let s=e.sets.filter(s=>s.done||s.reps!=="").map(s=>s.weight?`${s.weight}×${s.reps||"—"}`:`×${s.reps||"—"}`).join(", ");
       h+=`<div class="hrow"><span class="hn" onclick="toggleChart('${esc(e.name)}', ${i})" style="cursor:pointer" title="Показать график">${esc(e.name)}${pr(i,e)?` <span class="pr">🏆 1ПМ≈${Math.max(...e.sets.map(e1))}</span>`:""}${e.note?`<div class="hsub">${esc(e.note)}</div>`:""}</span><span class="hs">${s||"—"}</span></div>`;
     });
@@ -701,5 +706,5 @@ function render(){
 }
 
 function setStatus(x){document.getElementById("status").textContent=x}
-heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="light";save();render()};nw.onclick=()=>{S.page="workout";save();render()};nh.onclick=()=>{S.page="history";save();render()};np.onclick=()=>{S.page="prog";save();render()};nc.onclick=()=>{S.page="calendar";save();render()};fixDrafts();render();loadVideos();refreshAdmin();if(token)sync();document.addEventListener("visibilitychange",()=>{if(document.hidden){if(token){clearTimeout(pt);push()}}else if(token)sync()});window.addEventListener("pagehide",()=>{if(token){clearTimeout(pt);push()}});setInterval(()=>{if(!document.hidden&&token&&!(document.activeElement&&document.activeElement.tagName=="INPUT"))sync()},60000);if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="light";save();render()};nw.onclick=()=>{S.page="workout";save();render()};nh.onclick=()=>{S.page="history";S.progEx=null;save();render()};np.onclick=()=>{S.page="prog";save();render()};nc.onclick=()=>{S.page="calendar";save();render()};fixDrafts();render();loadVideos();refreshAdmin();if(token)sync();document.addEventListener("visibilitychange",()=>{if(document.hidden){if(token){clearTimeout(pt);push()}}else if(token)sync()});window.addEventListener("pagehide",()=>{if(token){clearTimeout(pt);push()}});setInterval(()=>{if(!document.hidden&&token&&!(document.activeElement&&document.activeElement.tagName=="INPUT"))sync()},60000);if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script></body></html>
