@@ -422,7 +422,7 @@ if(!S.builderOpen){h+=`<div class="builder-current">Упражнения дня 
 function openExercise(i){S.activeEx=i;save();renderW()}
 function closeExercise(){S.activeEx=null;save();renderW()}
 function openExerciseHistory(i){S.progEx=(draft()[i]||{}).name||"";S.page="history";save();render()}
-function returnFromExerciseHistory(){S.page="workout";save();render()}
+function returnFromExerciseHistory(){S.progEx=null;S.page="workout";save();render()}
 function renderNewSetRows(i,e){let h='<div class="set-row"><span class="set-label">№</span><span class="set-label">ВЕС, КГ</span><span class="set-label">ПОВТ.</span><span class="set-label">✓</span></div>';e.sets.forEach((s,j)=>{h+=`<div class="set-row"><span class="set-label">${j+1}</span><input value="${esc(s.weight)}" type="text" inputmode="decimal" onfocus="this.setSelectionRange(this.value.length,this.value.length)" onchange="up(${i},${j},'weight',this.value)"><input value="${esc(s.reps)}" type="text" inputmode="numeric" onfocus="this.setSelectionRange(this.value.length,this.value.length)" onchange="up(${i},${j},'reps',this.value)"><button class="check ${s.done?"on":""}" onclick="tg(${i},${j})">${s.done?"✓":"○"}</button></div>`});return h}
 function renderW(){let d=draft(),days=Object.keys(P[S.program].days||{}),dayName=(P[S.program].names||{})[S.day]||`День ${L[S.day]||S.day}`;
  if(S.activeEx!=null&&d[S.activeEx]){let i=S.activeEx,e=d[i],img=EXIMG[e.name]?`<img class="new-avatar" src="${esc(EXIMG[e.name])}" alt="${esc(e.name)}">`:`<div class="new-avatar">${e.cardio?"◷":""}</div>`;let h=`<div class="new-detail"><div class="new-detail-head"><button class="new-back" onclick="closeExercise()">‹</button><h2>Упражнение</h2><span style="width:42px"></span></div><section class="new-hero">${img}<h2>${esc(e.name)}</h2><p>${e.cardio?"Кардио · выносливость":"Тренировка · "+esc(dayName)}</p></section>`;
@@ -515,7 +515,7 @@ function hist(){
           <div class="hsub">День ${L[x.day]||x.day} (${esc(x.program)})${wtag?" • "+wtag:""}</div>
         </div>
         <div class="h-actions">
-          <button class="hbtn" onclick="toggleChart('${esc(x.exercises[0]?.name||"")}', ${i})" title="График">📈</button>
+          <button class="hbtn" onclick="toggleChart('${esc(visibleExercises[0]?.name||"")}', ${i})" title="График">📈</button>
           <button class="htrash" aria-label="Удалить" onclick="if(confirm('Удалить тренировку?'))delH(${i})">${TR}</button>
         </div>
       </div><div id="chart-container-${i}"></div>`;
