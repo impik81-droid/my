@@ -22,3 +22,4 @@ async function doApprove(id){
   }catch(e){alert("Ошибка сети: "+e.message)}
   return false;
 }
+async function delUser(id){if(!confirm("Удалить пользователя?"))return;try{let r=await fetch("/api/admin/users/delete",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+token},body:JSON.stringify({id})});if(r.ok)showUsers();else alert("Ошибка")}catch(e){alert(e.message)}}
