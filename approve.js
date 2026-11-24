@@ -10,6 +10,6 @@ async function doApprove(id){
   let programs=[...document.querySelectorAll(".pc:checked")].map(c=>c.value);
   try{
     let r=await fetch("/api/admin/users/approve",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+token},body:JSON.stringify({id,programs})});
-    if(r.ok){alert("Одобрено");location.reload()}else alert("Ошибка");
+    if(r.ok){alert("Одобрено");showUsers()}else alert("Ошибка");
   }catch(e){alert(e.message)}
 }
