@@ -710,5 +710,4 @@ heavy.onclick=()=>{S.week="heavy";save();render()};light.onclick=()=>{S.week="li
 function filterExercises(q){q=q.toLowerCase().trim();document.querySelectorAll(".builder-ex").forEach(el=>{let name=el.querySelector("b")?.textContent||"";el.style.display=!q||name.toLowerCase().includes(q)?"":"none"})}
 function doLogin(){let e=document.getElementById("loginEmail").value.trim(),p=document.getElementById("loginPass").value;if(!e||!p)return alert("Введите email и пароль");document.getElementById("email").value=e;document.getElementById("password").value=p;login().then(()=>{if(token)document.getElementById("loginScreen").style.display="none"})}
 function showRegister(){alert("Регистрация будет добавлена позже")}
-if(localStorage.getItem("wd_token"))document.getElementById("loginScreen").style.display="none";
 </script><script src="/cursor-fix.js"></script></body></html>
