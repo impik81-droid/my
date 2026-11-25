@@ -731,3 +731,27 @@ function saveNote(text){fetch("/api/note",{method:"POST",headers:{"Content-Type"
 function openNotes(){const t=prompt("Заметка к тренировке:",getNote());if(t!==null)saveNote(t);}
 
 </script><script src="/cursor-fix.js"></script><script src="/approve.js"></script><script src="/custom.js"></script></body></html>
+
+<script>
+// === Заметки к упражнению ===
+function getExNoteKey(){
+  if(S.activeEx==null) return null;
+  const name=(draft()[S.activeEx]||{}).name||"";
+  return S.program+"|"+S.day+"|"+(S.week||"heavy")+"|"+name;
+}
+function openExNote(){
+  const key=getExNoteKey();
+  if(!key) return;
+  const current=localStorage.getItem("note_"+key)||"";
+  const text=prompt("Заметка к упражнению:", current);
+  if(text!==null){
+    localStorage.setItem("note_"+key, text.trim());
+    toast("Заметка сохранена");
+    renderW();
+  }
+}
+function getExNote(){
+  const key=getExNoteKey();
+  return key ? (localStorage.getItem("note_"+key)||"") : "";
+}
+</script>
