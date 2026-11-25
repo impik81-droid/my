@@ -378,7 +378,7 @@ ED.forEach((e,i)=>{h+=`<div class="card"><div class="ed-name-row"><input value="
 function edMv(i,d){let j=i+d;if(j<0||j>=ED.length)return;[ED[i],ED[j]]=[ED[j],ED[i]];render()}
 function preserveDraftAfterEdit(){let prefix=S.program+"|",parsed=parse(P[S.program].days[S.day]);for(let k of Object.keys(S.drafts)){if(!k.startsWith(prefix)||!k.endsWith("|"+S.day))continue;let old=S.drafts[k],byName=new Map(old.map(e=>[e.name,e])),next=parsed.map(e=>{let prev=byName.get(e.name);if(prev)return{...prev,group:e.group||"",cardio:!!e.cardio};return{name:e.name,eid:exerciseId(e.name),group:e.group||"",cardio:!!e.cardio,sets:Array.from({length:(wkx()==="heavy"&&!e.cardio&&e.sets===3)?4:e.sets},()=>({weight:e.weight||0,reps:"",done:false}))}});S.drafts[k]=next}}
 function edCommit(){let rows=[],gm={};ED.filter(e=>String(e.name).trim()).forEach(e=>{let g=String(e.g||"").trim(),n=e.name.trim(),a=[n,+e.sets||1,+e.weight||0];if(g&&!n.startsWith("Кардио")){let k="SS"+g;if(gm[k])gm[k].push(";",...a);else{gm[k]=[k,...a];rows.push(gm[k])}}else rows.push([...a,""])});P[S.program].days[S.day]=rows;S.progs=S.progs||{};S.progs[S.program]={...P[S.program]};preserveDraftAfterEdit();markDraftsChanged()}
-function edSave(){edCommit();ED=null;S.page="workout";render();toast("Программа сохранена")}
+function edSave(){edCommit();ED=null;if(P[S.program].constructor===true)S.builderMode="workout";S.page="workout";save();render();toast("Программа сохранена")}
 function addDay(){edCommit();let ds=P[S.program].days,k=["A","B","V","G"].find(x=>!ds[x]);if(!k)return toast("Максимум 4 дня");ds[k]=[["Кардио: Ходьба на дорожке",1,10,""]];S.progs[S.program]={...P[S.program],days:ds};S.day=k;save();openEd()}
 function newProg(){let n=(prompt("Название новой программы:")||"").trim();if(!n||P[n])return n&&toast("Такая программа уже есть");edCommit();P[n]={days:{A:[["Кардио: Ходьба на дорожке",1,10,""]]}};S.progs[n]=P[n];S.program=n;S.day="A";fillProg();save();openEd()}
 function tgl(){showAuth=!showAuth;renderAuth()}
@@ -700,7 +700,7 @@ function render(){
   
   document.querySelector(".wk").classList.toggle("hidden",!!P[S.program].noWeek);heavy.classList.toggle("active",S.week=="heavy");
   light.classList.toggle("active",S.week=="light");
-  if(S.page=="workout"){if(P[S.program].constructor===true)renderConstructor();else renderW();}
+  if(S.page=="workout"){if(P[S.program].constructor===true&&S.builderMode!=="workout")renderConstructor();else renderW();}
   if(S.page=="history")renderH();
   if(S.page=="prog")document.getElementById("progp").innerHTML=progPage();
   if(S.page=="calendar")document.getElementById("calendar").innerHTML=cal();
