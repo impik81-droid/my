@@ -699,7 +699,7 @@ function render(){
   
   document.querySelector(".wk").classList.toggle("hidden",!!P[S.program].noWeek);heavy.classList.toggle("active",S.week=="heavy");
   light.classList.toggle("active",S.week=="light");
-  if(S.page=="workout")renderW();
+  if(S.page=="workout"){if(P[S.program].constructor===true)renderConstructor();else renderW();}
   if(S.page=="history")renderH();
   if(S.page=="prog")document.getElementById("progp").innerHTML=progPage();
   if(S.page=="calendar")document.getElementById("calendar").innerHTML=cal();
