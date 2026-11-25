@@ -366,8 +366,15 @@ const programLabel=n=>n==="Ирина"?"Ирина · Тренировка 1":n;
 function fillProg(){let b=document.getElementById("programLauncher");if(b)b.innerHTML=`${esc(programLabel(S.program))}<small>Программа · ${Object.keys(P).length} доступно</small>`}
 function openPrograms(){selectingProgram=true;render()}
 function chooseProgram(name){S.program=name;S.day=Object.keys(P[name].days||{} )[0]||"A";if(P[name].constructor===true){S.builderOpen=false;if(!P[name].days[S.day])P[name].days[S.day]=[];let hasExercises=parse(P[name].days[S.day]).some(e=>!e.cardio);S.builderMode=hasExercises?"workout":"build"};S.page="workout";localStorage.setItem(programKey(),name);selectingProgram=false;save();if(token)push();render()}
-function renderProgramPicker(){let allowed=JSON.parse(localStorage.getItem("wd_allowed")||"null");let names=isAdmin?Object.keys(P):(Array.isArray(allowed)?Object.keys(P).filter(n=>allowed.includes(n)):[]),h='<div class="program-picker">${(isAdmin||names.length)?'<button class="program-close" onclick="selectingProgram=false;render()" aria-label="Закрыть">×</button>':''}<h1>Выберите программу</h1><p>${names.length?'Доступно программ: <b style="color:var(--accent)">'+names.length+'</b><br>Выберите нужную программу — текущая отмечена галочкой.':'Администратор ещё не назначил вам программу.'}</p><div class="program-grid">';names.forEach(n=>{let p=P[n],days=Object.keys(p.days||{}),desc=p.constructor===true?'Создайте свою программу':p.noWeek?'4 фиксированных дня':`${days.length} ${days.length===1?'день':'дня'} · ${days.map(x=>L[x]||x).join(', ')}`,sel=n===S.program?' selected':'';h+=`<button class="program-choice${sel}" onclick="chooseProgram('${esc(n).replace(/'/g,"\\'")}')"><b>${esc(programLabel(n))}</b><span>${esc(desc)}</span></button>`});document.getElementById("programScreen").innerHTML=h+'</div></div>'}
-
+function renderProgramPicker(){
+  let allowed=JSON.parse(localStorage.getItem("wd_allowed")||"null");
+  let names=isAdmin?Object.keys(P):(Array.isArray(allowed)?Object.keys(P).filter(n=>allowed.includes(n)):[]);
+  let close=(isAdmin||names.length)?'<button class="program-close" onclick="selectingProgram=false;render()" aria-label="Закрыть">×</button>':'';
+  let info=names.length?`Доступно программ: <b style="color:var(--accent)">${names.length}</b><br>Выберите нужную программу — текущая отмечена галочкой.`:'Администратор ещё не назначил вам программу.';
+  let h=`<div class="program-picker">${close}<h1>Выберите программу</h1><p>${info}</p><div class="program-grid">`;
+  names.forEach(n=>{let p=P[n],days=Object.keys(p.days||{}),desc=p.constructor===true?'Создайте свою программу':p.noWeek?'4 фиксированных дня':`${days.length} ${days.length===1?'день':'дня'} · ${days.map(x=>L[x]||x).join(', ')}`,sel=n===S.program?' selected':'';h+=`<button class="program-choice${sel}" onclick="chooseProgram('${esc(n).replace(/'/g,"\'")}')"><b>${esc(programLabel(n))}</b><span>${esc(desc)}</span></button>`});
+  document.getElementById("programScreen").innerHTML=h+'</div></div>';
+}
 function openEd(){ED=parse(P[S.program].days[S.day]||[]).map(e=>({name:e.name,sets:e.sets,weight:e.weight,g:e.group?e.group.replace("SS",""):""}));S.editPicker=false;S.page="edit";render()}
 function edOpenPicker(){S.editPicker=true;S.builderGroup="all";render()}
 function edChooseExercise(name){if(ED.some(e=>e.name===name))return toast("Это упражнение уже добавлено");ED.push({name,sets:3,weight:0,g:""});S.editPicker=false;render()}
